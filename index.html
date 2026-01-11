@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Logística Industrial 3D</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0f;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* Glassmorphism Panel */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-panel-light {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+        }
+
+        /* KPI Cards */
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .kpi-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Buttons */
+        .btn-control {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-add:hover {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-remove {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: linear-gradient(135deg, #818cf8, #6366f1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Slider */
+        .slider-container {
+            width: 100%;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(96, 165, 250, 0.5);
+            transition: all 0.3s;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 4px 15px rgba(96, 165, 250, 0.7);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Status indicator */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* Zone Legend */
+        .zone-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .zone-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        /* Worker list */
+        .worker-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            transition: all 0.3s;
+        }
+
+        .worker-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        /* Title gradient */
+        .title-gradient {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(96, 165, 250, 0.5);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(96, 165, 250, 0.7);
+        }
+
+        /* Animation for new elements */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Panel -->
+    <div class="fixed top-4 left-4 w-80 glass-panel p-5 z-10 max-h-[calc(100vh-32px)] overflow-y-auto">
+        <!-- Header -->
+        <div class="mb-6">
+            <h1 class="text-xl font-bold title-gradient mb-1">Logística Industrial 3D</h1>
+            <p class="text-xs text-slate-400">Simulación de Flujo de Materiales</p>
+            <div class="flex items-center gap-2 mt-2">
+                <div class="status-dot bg-green-500"></div>
+                <span class="text-xs text-green-400">Simulación Activa</span>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpi-boxes">0</div>
+                <div class="kpi-label">Cajas Movidas</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpi-throughput">0.0</div>
+                <div class="kpi-label">Cajas/Min</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpi-cycle">0.0</div>
+                <div class="kpi-label">Ciclo Prom (s)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="kpi-workers">0</div>
+                <div class="kpi-label">Operarios</div>
+            </div>
+        </div>
+
+        <!-- Zone Legend -->
+        <div class="glass-panel-light p-3 mb-6">
+            <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wider">Zonas de Trabajo</h3>
+            <div class="flex gap-3">
+                <div class="zone-indicator flex-1">
+                    <div class="zone-color bg-green-500"></div>
+                    <span class="text-xs text-slate-300">Recepción (A)</span>
+                </div>
+                <div class="zone-indicator flex-1">
+                    <div class="zone-color bg-blue-500"></div>
+                    <span class="text-xs text-slate-300">Despacho (B)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="glass-panel-light p-4 mb-6">
+            <h3 class="text-xs font-semibold text-slate-300 mb-4 uppercase tracking-wider">Controles</h3>
+
+            <!-- Worker controls -->
+            <div class="flex gap-2 mb-4">
+                <button class="btn-control btn-add flex-1" onclick="window.addWorker()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Agregar
+                </button>
+                <button class="btn-control btn-remove flex-1" onclick="window.removeWorker()">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                    </svg>
+                    Quitar
+                </button>
+            </div>
+
+            <button class="btn-control btn-reset w-full mb-4" onclick="window.resetSimulation()">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Reiniciar Simulación
+            </button>
+
+            <!-- Speed slider -->
+            <div class="slider-container">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-slate-400">Velocidad</span>
+                    <span class="text-xs text-blue-400 font-semibold" id="speed-value">1.0x</span>
+                </div>
+                <input type="range" class="slider" id="speed-slider" min="0.1" max="3" step="0.1" value="1" onchange="window.updateSpeed(this.value)" oninput="window.updateSpeed(this.value)">
+            </div>
+        </div>
+
+        <!-- Workers List -->
+        <div class="glass-panel-light p-4">
+            <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wider">
+                Estado de Operarios
+            </h3>
+            <div class="space-y-2 max-h-40 overflow-y-auto" id="workers-list">
+                <p class="text-xs text-slate-500 italic">Sin operarios activos</p>
+            </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-6 text-xs text-slate-500">
+            <p class="mb-1">🖱️ Arrastra para rotar la cámara</p>
+            <p class="mb-1">🔍 Scroll para hacer zoom</p>
+            <p>📱 Click derecho para mover</p>
+        </div>
+    </div>
+
+    <!-- Time display -->
+    <div class="fixed top-4 right-4 glass-panel px-4 py-2 z-10">
+        <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-sm text-slate-300" id="sim-time">00:00</span>
+        </div>
+    </div>
+
+    <script type="module">
+        // =====================================================
+        // IMPORTACIONES DE THREE.JS
+        // =====================================================
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // =====================================================
+        // CONSTANTES Y CONFIGURACIÓN
+        // =====================================================
+        const CONFIG = {
+            // Dimensiones del escenario
+            FLOOR_SIZE: 40,
+            GRID_DIVISIONS: 40,
+
+            // Zonas
+            ZONE_A: { x: -12, z: 0, width: 8, depth: 12, color: 0x10b981 }, // Recepción (verde)
+            ZONE_B: { x: 12, z: 0, width: 8, depth: 12, color: 0x3b82f6 },  // Despacho (azul)
+
+            // Trabajadores
+            WORKER_HEIGHT: 1.5,
+            WORKER_RADIUS: 0.4,
+            WORKER_SPEED: 4, // unidades por segundo
+            LOAD_TIME: 1000, // ms
+            UNLOAD_TIME: 1000, // ms
+
+            // Colores
+            WORKER_COLORS: [0xf59e0b, 0xef4444, 0x8b5cf6, 0x06b6d4, 0xec4899, 0x84cc16],
+
+            // Caja
+            BOX_SIZE: 0.5
+        };
+
+        // Estados de los trabajadores
+        const STATES = {
+            IDLE: 'IDLE',
+            MOVING_TO_PICK: 'MOVING_TO_PICK',
+            LOADING: 'LOADING',
+            MOVING_TO_DROP: 'MOVING_TO_DROP',
+            UNLOADING: 'UNLOADING'
+        };
+
+        // Estado traducido para UI
+        const STATE_LABELS = {
+            IDLE: 'Esperando',
+            MOVING_TO_PICK: 'Hacia Recepción',
+            LOADING: 'Cargando...',
+            MOVING_TO_DROP: 'Hacia Despacho',
+            UNLOADING: 'Descargando...'
+        };
+
+        // Estado de colores para UI
+        const STATE_COLORS = {
+            IDLE: 'bg-gray-500',
+            MOVING_TO_PICK: 'bg-green-500',
+            LOADING: 'bg-yellow-500',
+            MOVING_TO_DROP: 'bg-blue-500',
+            UNLOADING: 'bg-purple-500'
+        };
+
+        // =====================================================
+        // VARIABLES GLOBALES
+        // =====================================================
+        let scene, camera, renderer, controls;
+        let workers = [];
+        let simulationSpeed = 1;
+        let simulationTime = 0;
+        let lastTime = 0;
+        let boxesMoved = 0;
+        let cycleTimes = [];
+        let workerIdCounter = 0;
+
+        // =====================================================
+        // CLASE TRABAJADOR (AGENTE)
+        // =====================================================
+        class Worker {
+            constructor(id, startPosition) {
+                this.id = id;
+                this.state = STATES.IDLE;
+                this.position = startPosition.clone();
+                this.targetPosition = null;
+                this.color = CONFIG.WORKER_COLORS[id % CONFIG.WORKER_COLORS.length];
+                this.stateTimer = 0;
+                this.cycleStartTime = 0;
+                this.box = null;
+
+                // Crear mesh del trabajador
+                this.createMesh();
+            }
+
+            createMesh() {
+                // Grupo principal
+                this.group = new THREE.Group();
+
+                // Cuerpo (cilindro)
+                const bodyGeometry = new THREE.CylinderGeometry(
+                    CONFIG.WORKER_RADIUS,
+                    CONFIG.WORKER_RADIUS * 0.8,
+                    CONFIG.WORKER_HEIGHT,
+                    16
+                );
+                const bodyMaterial = new THREE.MeshStandardMaterial({
+                    color: this.color,
+                    roughness: 0.4,
+                    metalness: 0.3
+                });
+                this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+                this.body.position.y = CONFIG.WORKER_HEIGHT / 2;
+                this.body.castShadow = true;
+                this.body.receiveShadow = true;
+                this.group.add(this.body);
+
+                // Cabeza (esfera)
+                const headGeometry = new THREE.SphereGeometry(CONFIG.WORKER_RADIUS * 0.6, 16, 16);
+                const headMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xfcd34d,
+                    roughness: 0.5,
+                    metalness: 0.1
+                });
+                this.head = new THREE.Mesh(headGeometry, headMaterial);
+                this.head.position.y = CONFIG.WORKER_HEIGHT + CONFIG.WORKER_RADIUS * 0.3;
+                this.head.castShadow = true;
+                this.group.add(this.head);
+
+                // Indicador de ID (pequeño cilindro en la cabeza)
+                const badgeGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 8);
+                const badgeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: this.color,
+                    emissiveIntensity: 0.5
+                });
+                this.badge = new THREE.Mesh(badgeGeometry, badgeMaterial);
+                this.badge.position.y = CONFIG.WORKER_HEIGHT + CONFIG.WORKER_RADIUS * 0.9;
+                this.badge.rotation.x = Math.PI / 2;
+                this.group.add(this.badge);
+
+                // Posición inicial
+                this.group.position.copy(this.position);
+
+                scene.add(this.group);
+            }
+
+            createBox() {
+                const boxGeometry = new THREE.BoxGeometry(
+                    CONFIG.BOX_SIZE,
+                    CONFIG.BOX_SIZE,
+                    CONFIG.BOX_SIZE
+                );
+                const boxMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x8b4513,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                this.box = new THREE.Mesh(boxGeometry, boxMaterial);
+                this.box.position.set(0, CONFIG.WORKER_HEIGHT + CONFIG.BOX_SIZE, CONFIG.WORKER_RADIUS + CONFIG.BOX_SIZE / 2);
+                this.box.castShadow = true;
+                this.group.add(this.box);
+            }
+
+            removeBox() {
+                if (this.box) {
+                    this.group.remove(this.box);
+                    this.box.geometry.dispose();
+                    this.box.material.dispose();
+                    this.box = null;
+                }
+            }
+
+            setState(newState) {
+                this.state = newState;
+                this.stateTimer = 0;
+
+                switch (newState) {
+                    case STATES.MOVING_TO_PICK:
+                        this.cycleStartTime = simulationTime;
+                        this.targetPosition = this.getRandomPointInZone(CONFIG.ZONE_A);
+                        break;
+                    case STATES.LOADING:
+                        this.targetPosition = null;
+                        break;
+                    case STATES.MOVING_TO_DROP:
+                        this.createBox();
+                        this.targetPosition = this.getRandomPointInZone(CONFIG.ZONE_B);
+                        break;
+                    case STATES.UNLOADING:
+                        this.targetPosition = null;
+                        break;
+                    case STATES.IDLE:
+                        this.removeBox();
+                        break;
+                }
+            }
+
+            getRandomPointInZone(zone) {
+                const x = zone.x + (Math.random() - 0.5) * (zone.width - 2);
+                const z = zone.z + (Math.random() - 0.5) * (zone.depth - 2);
+                return new THREE.Vector3(x, 0, z);
+            }
+
+            update(deltaTime) {
+                const adjustedDelta = deltaTime * simulationSpeed;
+
+                switch (this.state) {
+                    case STATES.IDLE:
+                        // Después de un breve momento, comenzar nuevo ciclo
+                        this.stateTimer += adjustedDelta * 1000;
+                        if (this.stateTimer > 200) {
+                            this.setState(STATES.MOVING_TO_PICK);
+                        }
+                        break;
+
+                    case STATES.MOVING_TO_PICK:
+                        if (this.moveTowards(this.targetPosition, adjustedDelta)) {
+                            this.setState(STATES.LOADING);
+                        }
+                        break;
+
+                    case STATES.LOADING:
+                        this.stateTimer += adjustedDelta * 1000;
+                        // Animación de carga
+                        this.body.scale.y = 1 + Math.sin(this.stateTimer * 0.01) * 0.05;
+                        if (this.stateTimer >= CONFIG.LOAD_TIME) {
+                            this.body.scale.y = 1;
+                            this.setState(STATES.MOVING_TO_DROP);
+                        }
+                        break;
+
+                    case STATES.MOVING_TO_DROP:
+                        if (this.moveTowards(this.targetPosition, adjustedDelta)) {
+                            this.setState(STATES.UNLOADING);
+                        }
+                        break;
+
+                    case STATES.UNLOADING:
+                        this.stateTimer += adjustedDelta * 1000;
+                        // Animación de descarga
+                        this.body.scale.y = 1 - Math.sin(this.stateTimer * 0.01) * 0.05;
+                        if (this.stateTimer >= CONFIG.UNLOAD_TIME) {
+                            this.body.scale.y = 1;
+                            this.removeBox();
+                            boxesMoved++;
+
+                            // Registrar tiempo de ciclo
+                            const cycleTime = simulationTime - this.cycleStartTime;
+                            cycleTimes.push(cycleTime);
+                            if (cycleTimes.length > 50) cycleTimes.shift();
+
+                            this.setState(STATES.IDLE);
+                        }
+                        break;
+                }
+
+                // Actualizar posición del grupo
+                this.group.position.copy(this.position);
+
+                // Animación de movimiento (balanceo)
+                if (this.state === STATES.MOVING_TO_PICK || this.state === STATES.MOVING_TO_DROP) {
+                    this.body.rotation.z = Math.sin(simulationTime * 10) * 0.1;
+                } else {
+                    this.body.rotation.z *= 0.9;
+                }
+            }
+
+            moveTowards(target, deltaTime) {
+                if (!target) return true;
+
+                const direction = new THREE.Vector3().subVectors(target, this.position);
+                const distance = direction.length();
+
+                if (distance < 0.1) {
+                    this.position.copy(target);
+                    return true;
+                }
+
+                direction.normalize();
+                const moveDistance = CONFIG.WORKER_SPEED * deltaTime;
+
+                if (moveDistance >= distance) {
+                    this.position.copy(target);
+                    return true;
+                }
+
+                this.position.add(direction.multiplyScalar(moveDistance));
+
+                // Rotar hacia la dirección de movimiento
+                const angle = Math.atan2(direction.x, direction.z);
+                this.group.rotation.y = angle;
+
+                return false;
+            }
+
+            dispose() {
+                this.removeBox();
+                scene.remove(this.group);
+                this.body.geometry.dispose();
+                this.body.material.dispose();
+                this.head.geometry.dispose();
+                this.head.material.dispose();
+                this.badge.geometry.dispose();
+                this.badge.material.dispose();
+            }
+        }
+
+        // =====================================================
+        // INICIALIZACIÓN DE THREE.JS
+        // =====================================================
+        function initThree() {
+            // Escena
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a1a);
+            scene.fog = new THREE.Fog(0x0a0a1a, 30, 80);
+
+            // Cámara
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(25, 20, 25);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controles de órbita
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 10;
+            controls.maxDistance = 60;
+            controls.maxPolarAngle = Math.PI / 2.2;
+            controls.target.set(0, 0, 0);
+
+            // Crear escenario
+            createFloor();
+            createZones();
+            createLights();
+            createDecorations();
+        }
+
+        // =====================================================
+        // CREACIÓN DEL ESCENARIO
+        // =====================================================
+        function createFloor() {
+            // Suelo principal
+            const floorGeometry = new THREE.PlaneGeometry(CONFIG.FLOOR_SIZE, CONFIG.FLOOR_SIZE);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x1a1a2e,
+                roughness: 0.9,
+                metalness: 0.1
+            });
+            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Cuadrícula
+            const gridHelper = new THREE.GridHelper(
+                CONFIG.FLOOR_SIZE,
+                CONFIG.GRID_DIVISIONS,
+                0x2a2a4a,
+                0x1a1a3a
+            );
+            gridHelper.position.y = 0.01;
+            scene.add(gridHelper);
+        }
+
+        function createZones() {
+            // Zona A - Recepción
+            createZone(CONFIG.ZONE_A, 'A');
+
+            // Zona B - Despacho
+            createZone(CONFIG.ZONE_B, 'B');
+        }
+
+        function createZone(zone, label) {
+            // Plano semitransparente
+            const zoneGeometry = new THREE.PlaneGeometry(zone.width, zone.depth);
+            const zoneMaterial = new THREE.MeshStandardMaterial({
+                color: zone.color,
+                transparent: true,
+                opacity: 0.3,
+                side: THREE.DoubleSide,
+                roughness: 0.8
+            });
+            const zoneMesh = new THREE.Mesh(zoneGeometry, zoneMaterial);
+            zoneMesh.rotation.x = -Math.PI / 2;
+            zoneMesh.position.set(zone.x, 0.02, zone.z);
+            zoneMesh.receiveShadow = true;
+            scene.add(zoneMesh);
+
+            // Borde de la zona
+            const borderGeometry = new THREE.EdgesGeometry(zoneGeometry);
+            const borderMaterial = new THREE.LineBasicMaterial({
+                color: zone.color,
+                linewidth: 2
+            });
+            const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+            border.rotation.x = -Math.PI / 2;
+            border.position.set(zone.x, 0.03, zone.z);
+            scene.add(border);
+
+            // Postes de las esquinas
+            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
+            const postMaterial = new THREE.MeshStandardMaterial({
+                color: zone.color,
+                emissive: zone.color,
+                emissiveIntensity: 0.3
+            });
+
+            const corners = [
+                [zone.x - zone.width/2, zone.z - zone.depth/2],
+                [zone.x + zone.width/2, zone.z - zone.depth/2],
+                [zone.x - zone.width/2, zone.z + zone.depth/2],
+                [zone.x + zone.width/2, zone.z + zone.depth/2]
+            ];
+
+            corners.forEach(([x, z]) => {
+                const post = new THREE.Mesh(postGeometry, postMaterial);
+                post.position.set(x, 1, z);
+                post.castShadow = true;
+                scene.add(post);
+
+                // Luz en cada poste
+                const light = new THREE.PointLight(zone.color, 0.5, 5);
+                light.position.set(x, 2.2, z);
+                scene.add(light);
+            });
+        }
+
+        function createLights() {
+            // Luz ambiental
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
+            scene.add(ambientLight);
+
+            // Luz direccional principal (sol)
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+            mainLight.position.set(20, 30, 10);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.camera.near = 0.5;
+            mainLight.shadow.camera.far = 100;
+            mainLight.shadow.camera.left = -30;
+            mainLight.shadow.camera.right = 30;
+            mainLight.shadow.camera.top = 30;
+            mainLight.shadow.camera.bottom = -30;
+            mainLight.shadow.bias = -0.0001;
+            scene.add(mainLight);
+
+            // Luz de relleno
+            const fillLight = new THREE.DirectionalLight(0x6080ff, 0.3);
+            fillLight.position.set(-10, 10, -10);
+            scene.add(fillLight);
+
+            // Luz cenital
+            const topLight = new THREE.PointLight(0xffffff, 0.5, 50);
+            topLight.position.set(0, 15, 0);
+            scene.add(topLight);
+        }
+
+        function createDecorations() {
+            // Estanterías en los bordes
+            createShelves(-18, 0, 0);
+            createShelves(18, 0, Math.PI);
+
+            // Pallets decorativos
+            for (let i = 0; i < 5; i++) {
+                createPallet(
+                    CONFIG.ZONE_A.x + (Math.random() - 0.5) * 4,
+                    CONFIG.ZONE_A.z + (Math.random() - 0.5) * 8
+                );
+            }
+
+            for (let i = 0; i < 3; i++) {
+                createPallet(
+                    CONFIG.ZONE_B.x + (Math.random() - 0.5) * 4,
+                    CONFIG.ZONE_B.z + (Math.random() - 0.5) * 8
+                );
+            }
+        }
+
+        function createShelves(x, z, rotation) {
+            const shelfGroup = new THREE.Group();
+
+            // Postes
+            const postGeometry = new THREE.BoxGeometry(0.2, 4, 0.2);
+            const postMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a5568,
+                roughness: 0.7,
+                metalness: 0.3
+            });
+
+            for (let i = 0; i < 4; i++) {
+                const post = new THREE.Mesh(postGeometry, postMaterial);
+                post.position.set((i - 1.5) * 2, 2, 0);
+                post.castShadow = true;
+                shelfGroup.add(post);
+            }
+
+            // Estantes
+            const shelfGeometry = new THREE.BoxGeometry(6.5, 0.1, 1);
+            const shelfMaterial = new THREE.MeshStandardMaterial({
+                color: 0x718096,
+                roughness: 0.6,
+                metalness: 0.2
+            });
+
+            for (let i = 0; i < 3; i++) {
+                const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
+                shelf.position.set(0, 1 + i * 1.3, 0);
+                shelf.castShadow = true;
+                shelf.receiveShadow = true;
+                shelfGroup.add(shelf);
+            }
+
+            shelfGroup.position.set(x, 0, z);
+            shelfGroup.rotation.y = rotation;
+            scene.add(shelfGroup);
+        }
+
+        function createPallet(x, z) {
+            const palletGroup = new THREE.Group();
+
+            // Base del pallet
+            const baseGeometry = new THREE.BoxGeometry(1.2, 0.15, 0.8);
+            const baseMaterial = new THREE.MeshStandardMaterial({
+                color: 0x8b7355,
+                roughness: 0.9
+            });
+            const base = new THREE.Mesh(baseGeometry, baseMaterial);
+            base.position.y = 0.075;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            palletGroup.add(base);
+
+            // Cajas apiladas (aleatorio)
+            const boxCount = Math.floor(Math.random() * 4) + 1;
+            const boxGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.3);
+            const boxMaterials = [
+                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.8 }),
+                new THREE.MeshStandardMaterial({ color: 0xa0522d, roughness: 0.8 })
+            ];
+
+            for (let i = 0; i < boxCount; i++) {
+                const box = new THREE.Mesh(
+                    boxGeometry,
+                    boxMaterials[Math.floor(Math.random() * boxMaterials.length)]
+                );
+                box.position.set(
+                    (Math.random() - 0.5) * 0.6,
+                    0.3 + Math.floor(i / 2) * 0.35,
+                    (Math.random() - 0.5) * 0.3
+                );
+                box.rotation.y = Math.random() * 0.3;
+                box.castShadow = true;
+                box.receiveShadow = true;
+                palletGroup.add(box);
+            }
+
+            palletGroup.position.set(x, 0, z);
+            palletGroup.rotation.y = Math.random() * Math.PI;
+            scene.add(palletGroup);
+        }
+
+        // =====================================================
+        // FUNCIONES DE CONTROL (GLOBALES)
+        // =====================================================
+        function addWorker() {
+            const startPos = new THREE.Vector3(
+                (Math.random() - 0.5) * 6,
+                0,
+                (Math.random() - 0.5) * 6
+            );
+            const worker = new Worker(workerIdCounter++, startPos);
+            workers.push(worker);
+            updateWorkersUI();
+        }
+
+        function removeWorker() {
+            if (workers.length > 0) {
+                const worker = workers.pop();
+                worker.dispose();
+                updateWorkersUI();
+            }
+        }
+
+        function resetSimulation() {
+            // Eliminar todos los trabajadores
+            workers.forEach(w => w.dispose());
+            workers = [];
+
+            // Resetear estadísticas
+            boxesMoved = 0;
+            cycleTimes = [];
+            simulationTime = 0;
+            workerIdCounter = 0;
+
+            // Actualizar UI
+            updateKPIs();
+            updateWorkersUI();
+        }
+
+        function updateSpeed(value) {
+            simulationSpeed = parseFloat(value);
+            document.getElementById('speed-value').textContent = `${simulationSpeed.toFixed(1)}x`;
+        }
+
+        // Exponer funciones globalmente
+        window.addWorker = addWorker;
+        window.removeWorker = removeWorker;
+        window.resetSimulation = resetSimulation;
+        window.updateSpeed = updateSpeed;
+
+        // =====================================================
+        // ACTUALIZACIÓN DE UI
+        // =====================================================
+        function updateKPIs() {
+            document.getElementById('kpi-boxes').textContent = boxesMoved;
+
+            // Throughput (cajas por minuto)
+            const throughput = simulationTime > 0 ? (boxesMoved / simulationTime) * 60 : 0;
+            document.getElementById('kpi-throughput').textContent = throughput.toFixed(1);
+
+            // Tiempo de ciclo promedio
+            const avgCycle = cycleTimes.length > 0
+                ? cycleTimes.reduce((a, b) => a + b, 0) / cycleTimes.length
+                : 0;
+            document.getElementById('kpi-cycle').textContent = avgCycle.toFixed(1);
+
+            // Número de operarios
+            document.getElementById('kpi-workers').textContent = workers.length;
+
+            // Tiempo de simulación
+            const minutes = Math.floor(simulationTime / 60);
+            const seconds = Math.floor(simulationTime % 60);
+            document.getElementById('sim-time').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateWorkersUI() {
+            const container = document.getElementById('workers-list');
+
+            if (workers.length === 0) {
+                container.innerHTML = '<p class="text-xs text-slate-500 italic">Sin operarios activos</p>';
+                return;
+            }
+
+            container.innerHTML = workers.map(w => `
+                <div class="worker-item animate-slide-in">
+                    <div class="w-3 h-3 rounded-full ${STATE_COLORS[w.state]}"></div>
+                    <span class="flex-1">Operario #${w.id + 1}</span>
+                    <span class="text-slate-400">${STATE_LABELS[w.state]}</span>
+                </div>
+            `).join('');
+        }
+
+        // =====================================================
+        // BUCLE DE ANIMACIÓN
+        // =====================================================
+        function animate(currentTime) {
+            requestAnimationFrame(animate);
+
+            // Calcular delta time
+            if (lastTime === 0) lastTime = currentTime;
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            // Actualizar tiempo de simulación
+            simulationTime += deltaTime * simulationSpeed;
+
+            // Actualizar trabajadores
+            workers.forEach(worker => worker.update(deltaTime));
+
+            // Actualizar controles
+            controls.update();
+
+            // Actualizar KPIs (cada 10 frames aproximadamente)
+            if (Math.floor(currentTime / 100) % 3 === 0) {
+                updateKPIs();
+            }
+
+            // Actualizar lista de trabajadores (cada segundo aproximadamente)
+            if (Math.floor(currentTime / 500) % 2 === 0) {
+                updateWorkersUI();
+            }
+
+            // Renderizar
+            renderer.render(scene, camera);
+        }
+
+        // =====================================================
+        // MANEJO DE EVENTOS
+        // =====================================================
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.addEventListener('resize', onWindowResize);
+
+        // =====================================================
+        // INICIALIZACIÓN
+        // =====================================================
+        function init() {
+            initThree();
+
+            // Agregar algunos trabajadores iniciales
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => addWorker(), i * 300);
+            }
+
+            // Iniciar animación
+            animate(0);
+        }
+
+        // Ejecutar cuando el DOM esté listo
+        init();
+    </script>
+</body>
+</html>
