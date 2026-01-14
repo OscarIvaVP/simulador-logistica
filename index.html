@@ -41,7 +41,7 @@
 
         /* Glassmorphism Panel */
         .glass-panel {
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -74,7 +74,7 @@
         }
 
         .kpi-value {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             background: linear-gradient(135deg, #60a5fa, #a78bfa);
             -webkit-background-clip: text;
@@ -83,7 +83,7 @@
         }
 
         .kpi-label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -138,10 +138,6 @@
         }
 
         /* Slider */
-        .slider-container {
-            width: 100%;
-        }
-
         .slider {
             -webkit-appearance: none;
             width: 100%;
@@ -149,7 +145,6 @@
             border-radius: 4px;
             background: linear-gradient(90deg, rgba(59, 130, 246, 0.3), rgba(139, 92, 246, 0.3));
             outline: none;
-            transition: all 0.3s;
         }
 
         .slider::-webkit-slider-thumb {
@@ -160,12 +155,6 @@
             background: linear-gradient(135deg, #60a5fa, #a78bfa);
             cursor: pointer;
             box-shadow: 0 2px 10px rgba(96, 165, 250, 0.5);
-            transition: all 0.3s;
-        }
-
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            box-shadow: 0 4px 15px rgba(96, 165, 250, 0.7);
         }
 
         .slider::-moz-range-thumb {
@@ -232,50 +221,65 @@
         }
 
         /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: rgba(96, 165, 250, 0.5); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(96, 165, 250, 0.7); }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(96, 165, 250, 0.5);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(96, 165, 250, 0.7);
-        }
-
-        /* Animation for new elements */
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .animate-slide-in {
             animation: slideIn 0.3s ease-out;
         }
+
+        /* Loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0a0a1a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(96, 165, 250, 0.2);
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader mb-4"></div>
+        <p class="text-slate-400 text-sm">Cargando simulación...</p>
+    </div>
+
     <!-- Canvas Container -->
     <div id="canvas-container"></div>
 
     <!-- UI Panel -->
     <div class="fixed top-4 left-4 w-80 glass-panel p-5 z-10 max-h-[calc(100vh-32px)] overflow-y-auto">
         <!-- Header -->
-        <div class="mb-6">
-            <h1 class="text-xl font-bold title-gradient mb-1">Logística Industrial 3D</h1>
+        <div class="mb-5">
+            <h1 class="text-lg font-bold title-gradient mb-1">Logística Industrial 3D</h1>
             <p class="text-xs text-slate-400">Simulación de Flujo de Materiales</p>
             <div class="flex items-center gap-2 mt-2">
                 <div class="status-dot bg-green-500"></div>
@@ -284,7 +288,7 @@
         </div>
 
         <!-- KPIs -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
+        <div class="grid grid-cols-2 gap-3 mb-5">
             <div class="kpi-card">
                 <div class="kpi-value" id="kpi-boxes">0</div>
                 <div class="kpi-label">Cajas Movidas</div>
@@ -304,25 +308,24 @@
         </div>
 
         <!-- Zone Legend -->
-        <div class="glass-panel-light p-3 mb-6">
+        <div class="glass-panel-light p-3 mb-5">
             <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wider">Zonas de Trabajo</h3>
             <div class="flex gap-3">
                 <div class="zone-indicator flex-1">
                     <div class="zone-color bg-green-500"></div>
-                    <span class="text-xs text-slate-300">Recepción (A)</span>
+                    <span class="text-xs text-slate-300">Recepción</span>
                 </div>
                 <div class="zone-indicator flex-1">
                     <div class="zone-color bg-blue-500"></div>
-                    <span class="text-xs text-slate-300">Despacho (B)</span>
+                    <span class="text-xs text-slate-300">Despacho</span>
                 </div>
             </div>
         </div>
 
         <!-- Controls -->
-        <div class="glass-panel-light p-4 mb-6">
+        <div class="glass-panel-light p-4 mb-5">
             <h3 class="text-xs font-semibold text-slate-300 mb-4 uppercase tracking-wider">Controles</h3>
 
-            <!-- Worker controls -->
             <div class="flex gap-2 mb-4">
                 <button class="btn-control btn-add flex-1" onclick="window.addWorker()">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -342,33 +345,31 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                 </svg>
-                Reiniciar Simulación
+                Reiniciar
             </button>
 
-            <!-- Speed slider -->
-            <div class="slider-container">
+            <div>
                 <div class="flex justify-between items-center mb-2">
                     <span class="text-xs text-slate-400">Velocidad</span>
                     <span class="text-xs text-blue-400 font-semibold" id="speed-value">1.0x</span>
                 </div>
-                <input type="range" class="slider" id="speed-slider" min="0.1" max="3" step="0.1" value="1" onchange="window.updateSpeed(this.value)" oninput="window.updateSpeed(this.value)">
+                <input type="range" class="slider" id="speed-slider" min="0.1" max="3" step="0.1" value="1"
+                       onchange="window.updateSpeed(this.value)" oninput="window.updateSpeed(this.value)">
             </div>
         </div>
 
         <!-- Workers List -->
         <div class="glass-panel-light p-4">
-            <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wider">
-                Estado de Operarios
-            </h3>
-            <div class="space-y-2 max-h-40 overflow-y-auto" id="workers-list">
+            <h3 class="text-xs font-semibold text-slate-300 mb-3 uppercase tracking-wider">Estado de Operarios</h3>
+            <div class="space-y-2 max-h-32 overflow-y-auto" id="workers-list">
                 <p class="text-xs text-slate-500 italic">Sin operarios activos</p>
             </div>
         </div>
 
         <!-- Instructions -->
-        <div class="mt-6 text-xs text-slate-500">
-            <p class="mb-1">🖱️ Arrastra para rotar la cámara</p>
-            <p class="mb-1">🔍 Scroll para hacer zoom</p>
+        <div class="mt-5 text-xs text-slate-500">
+            <p class="mb-1">🖱️ Arrastra para rotar</p>
+            <p class="mb-1">🔍 Scroll para zoom</p>
             <p>📱 Click derecho para mover</p>
         </div>
     </div>
@@ -385,38 +386,34 @@
 
     <script type="module">
         // =====================================================
-        // IMPORTACIONES DE THREE.JS
+        // IMPORTACIONES
         // =====================================================
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
         // =====================================================
-        // CONSTANTES Y CONFIGURACIÓN
+        // CONFIGURACIÓN
         // =====================================================
         const CONFIG = {
-            // Dimensiones del escenario
-            FLOOR_SIZE: 40,
-            GRID_DIVISIONS: 40,
+            FLOOR_SIZE: 50,
+            GRID_DIVISIONS: 50,
 
             // Zonas
-            ZONE_A: { x: -12, z: 0, width: 8, depth: 12, color: 0x10b981 }, // Recepción (verde)
-            ZONE_B: { x: 12, z: 0, width: 8, depth: 12, color: 0x3b82f6 },  // Despacho (azul)
+            ZONE_A: { x: -15, z: 0, width: 10, depth: 16, color: 0x10b981 },
+            ZONE_B: { x: 15, z: 0, width: 10, depth: 16, color: 0x3b82f6 },
 
             // Trabajadores
-            WORKER_HEIGHT: 1.5,
-            WORKER_RADIUS: 0.4,
-            WORKER_SPEED: 4, // unidades por segundo
-            LOAD_TIME: 1000, // ms
-            UNLOAD_TIME: 1000, // ms
+            WORKER_SPEED: 3.5,
+            LOAD_TIME: 1200,
+            UNLOAD_TIME: 1000,
 
-            // Colores
-            WORKER_COLORS: [0xf59e0b, 0xef4444, 0x8b5cf6, 0x06b6d4, 0xec4899, 0x84cc16],
+            // Colores de chalecos
+            VEST_COLORS: [0xff6b00, 0xffdd00, 0x00ff88, 0xff00aa, 0x00aaff, 0xaa00ff],
 
-            // Caja
-            BOX_SIZE: 0.5
+            BOX_SIZE: 0.45
         };
 
-        // Estados de los trabajadores
+        // Estados
         const STATES = {
             IDLE: 'IDLE',
             MOVING_TO_PICK: 'MOVING_TO_PICK',
@@ -425,7 +422,6 @@
             UNLOADING: 'UNLOADING'
         };
 
-        // Estado traducido para UI
         const STATE_LABELS = {
             IDLE: 'Esperando',
             MOVING_TO_PICK: 'Hacia Recepción',
@@ -434,7 +430,6 @@
             UNLOADING: 'Descargando...'
         };
 
-        // Estado de colores para UI
         const STATE_COLORS = {
             IDLE: 'bg-gray-500',
             MOVING_TO_PICK: 'bg-green-500',
@@ -454,100 +449,316 @@
         let boxesMoved = 0;
         let cycleTimes = [];
         let workerIdCounter = 0;
+        let clock = new THREE.Clock();
+        let dustParticles = null;
+        let ambientParticles = null;
 
         // =====================================================
-        // CLASE TRABAJADOR (AGENTE)
+        // CLASE TRABAJADOR HUMANOIDE
         // =====================================================
-        class Worker {
+        class HumanoidWorker {
             constructor(id, startPosition) {
                 this.id = id;
                 this.state = STATES.IDLE;
                 this.position = startPosition.clone();
                 this.targetPosition = null;
-                this.color = CONFIG.WORKER_COLORS[id % CONFIG.WORKER_COLORS.length];
+                this.vestColor = CONFIG.VEST_COLORS[id % CONFIG.VEST_COLORS.length];
                 this.stateTimer = 0;
                 this.cycleStartTime = 0;
                 this.box = null;
+                this.walkCycle = 0;
 
-                // Crear mesh del trabajador
-                this.createMesh();
+                this.createHumanoid();
             }
 
-            createMesh() {
-                // Grupo principal
+            createHumanoid() {
                 this.group = new THREE.Group();
 
-                // Cuerpo (cilindro)
-                const bodyGeometry = new THREE.CylinderGeometry(
-                    CONFIG.WORKER_RADIUS,
-                    CONFIG.WORKER_RADIUS * 0.8,
-                    CONFIG.WORKER_HEIGHT,
-                    16
-                );
-                const bodyMaterial = new THREE.MeshStandardMaterial({
-                    color: this.color,
-                    roughness: 0.4,
-                    metalness: 0.3
-                });
-                this.body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-                this.body.position.y = CONFIG.WORKER_HEIGHT / 2;
-                this.body.castShadow = true;
-                this.body.receiveShadow = true;
-                this.group.add(this.body);
-
-                // Cabeza (esfera)
-                const headGeometry = new THREE.SphereGeometry(CONFIG.WORKER_RADIUS * 0.6, 16, 16);
-                const headMaterial = new THREE.MeshStandardMaterial({
-                    color: 0xfcd34d,
-                    roughness: 0.5,
+                // Materiales
+                const skinMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xe0b090,
+                    roughness: 0.7,
                     metalness: 0.1
                 });
-                this.head = new THREE.Mesh(headGeometry, headMaterial);
-                this.head.position.y = CONFIG.WORKER_HEIGHT + CONFIG.WORKER_RADIUS * 0.3;
-                this.head.castShadow = true;
+
+                const pantsMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x2c3e50,
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+
+                const vestMaterial = new THREE.MeshStandardMaterial({
+                    color: this.vestColor,
+                    roughness: 0.5,
+                    metalness: 0.2,
+                    emissive: this.vestColor,
+                    emissiveIntensity: 0.1
+                });
+
+                const helmetMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xf1c40f,
+                    roughness: 0.3,
+                    metalness: 0.4
+                });
+
+                const bootMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a1a,
+                    roughness: 0.9,
+                    metalness: 0.1
+                });
+
+                // === PIERNAS ===
+                this.leftLeg = new THREE.Group();
+                this.rightLeg = new THREE.Group();
+
+                // Muslo
+                const thighGeo = new THREE.CapsuleGeometry(0.12, 0.35, 4, 8);
+                const leftThigh = new THREE.Mesh(thighGeo, pantsMaterial);
+                leftThigh.position.y = -0.25;
+                leftThigh.castShadow = true;
+                this.leftLeg.add(leftThigh);
+
+                const rightThigh = new THREE.Mesh(thighGeo, pantsMaterial);
+                rightThigh.position.y = -0.25;
+                rightThigh.castShadow = true;
+                this.rightLeg.add(rightThigh);
+
+                // Pantorrilla
+                const calfGeo = new THREE.CapsuleGeometry(0.1, 0.35, 4, 8);
+                const leftCalf = new THREE.Mesh(calfGeo, pantsMaterial);
+                leftCalf.position.y = -0.65;
+                leftCalf.castShadow = true;
+                this.leftLeg.add(leftCalf);
+
+                const rightCalf = new THREE.Mesh(calfGeo, pantsMaterial);
+                rightCalf.position.y = -0.65;
+                rightCalf.castShadow = true;
+                this.rightLeg.add(rightCalf);
+
+                // Botas
+                const bootGeo = new THREE.BoxGeometry(0.18, 0.15, 0.28);
+                const leftBoot = new THREE.Mesh(bootGeo, bootMaterial);
+                leftBoot.position.set(0, -0.95, 0.04);
+                leftBoot.castShadow = true;
+                this.leftLeg.add(leftBoot);
+
+                const rightBoot = new THREE.Mesh(bootGeo, bootMaterial);
+                rightBoot.position.set(0, -0.95, 0.04);
+                rightBoot.castShadow = true;
+                this.rightLeg.add(rightBoot);
+
+                this.leftLeg.position.set(-0.15, 1.0, 0);
+                this.rightLeg.position.set(0.15, 1.0, 0);
+                this.group.add(this.leftLeg);
+                this.group.add(this.rightLeg);
+
+                // === TORSO ===
+                this.torso = new THREE.Group();
+
+                // Cuerpo base
+                const torsoGeo = new THREE.CapsuleGeometry(0.22, 0.4, 4, 8);
+                const torsoMesh = new THREE.Mesh(torsoGeo, vestMaterial);
+                torsoMesh.position.y = 0;
+                torsoMesh.castShadow = true;
+                this.torso.add(torsoMesh);
+
+                // Franjas reflectantes del chaleco
+                const stripeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0xcccccc,
+                    roughness: 0.3,
+                    metalness: 0.6,
+                    emissive: 0xffffff,
+                    emissiveIntensity: 0.2
+                });
+
+                const stripeGeo = new THREE.TorusGeometry(0.24, 0.02, 8, 16);
+                const stripe1 = new THREE.Mesh(stripeGeo, stripeMaterial);
+                stripe1.position.y = 0.1;
+                stripe1.rotation.x = Math.PI / 2;
+                this.torso.add(stripe1);
+
+                const stripe2 = new THREE.Mesh(stripeGeo, stripeMaterial);
+                stripe2.position.y = -0.1;
+                stripe2.rotation.x = Math.PI / 2;
+                this.torso.add(stripe2);
+
+                this.torso.position.y = 1.45;
+                this.group.add(this.torso);
+
+                // === BRAZOS ===
+                this.leftArm = new THREE.Group();
+                this.rightArm = new THREE.Group();
+
+                // Hombro y brazo superior
+                const upperArmGeo = new THREE.CapsuleGeometry(0.08, 0.25, 4, 8);
+                const leftUpperArm = new THREE.Mesh(upperArmGeo, vestMaterial);
+                leftUpperArm.position.y = -0.15;
+                leftUpperArm.castShadow = true;
+                this.leftArm.add(leftUpperArm);
+
+                const rightUpperArm = new THREE.Mesh(upperArmGeo, vestMaterial);
+                rightUpperArm.position.y = -0.15;
+                rightUpperArm.castShadow = true;
+                this.rightArm.add(rightUpperArm);
+
+                // Antebrazo
+                const forearmGeo = new THREE.CapsuleGeometry(0.07, 0.22, 4, 8);
+                const leftForearm = new THREE.Mesh(forearmGeo, skinMaterial);
+                leftForearm.position.y = -0.42;
+                leftForearm.castShadow = true;
+                this.leftArm.add(leftForearm);
+
+                const rightForearm = new THREE.Mesh(forearmGeo, skinMaterial);
+                rightForearm.position.y = -0.42;
+                rightForearm.castShadow = true;
+                this.rightArm.add(rightForearm);
+
+                // Manos
+                const handGeo = new THREE.SphereGeometry(0.06, 8, 8);
+                const leftHand = new THREE.Mesh(handGeo, skinMaterial);
+                leftHand.position.y = -0.58;
+                leftHand.castShadow = true;
+                this.leftArm.add(leftHand);
+
+                const rightHand = new THREE.Mesh(handGeo, skinMaterial);
+                rightHand.position.y = -0.58;
+                rightHand.castShadow = true;
+                this.rightArm.add(rightHand);
+
+                // Guantes
+                const gloveMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x444444,
+                    roughness: 0.7
+                });
+                const gloveGeo = new THREE.SphereGeometry(0.065, 8, 8);
+                const leftGlove = new THREE.Mesh(gloveGeo, gloveMaterial);
+                leftGlove.position.y = -0.58;
+                this.leftArm.add(leftGlove);
+
+                const rightGlove = new THREE.Mesh(gloveGeo, gloveMaterial);
+                rightGlove.position.y = -0.58;
+                this.rightArm.add(rightGlove);
+
+                this.leftArm.position.set(-0.32, 1.6, 0);
+                this.rightArm.position.set(0.32, 1.6, 0);
+                this.group.add(this.leftArm);
+                this.group.add(this.rightArm);
+
+                // === CABEZA ===
+                this.head = new THREE.Group();
+
+                // Cuello
+                const neckGeo = new THREE.CylinderGeometry(0.08, 0.1, 0.12, 8);
+                const neck = new THREE.Mesh(neckGeo, skinMaterial);
+                neck.position.y = 0;
+                this.head.add(neck);
+
+                // Cabeza
+                const headGeo = new THREE.SphereGeometry(0.18, 16, 16);
+                const headMesh = new THREE.Mesh(headGeo, skinMaterial);
+                headMesh.position.y = 0.2;
+                headMesh.scale.set(1, 1.1, 1);
+                headMesh.castShadow = true;
+                this.head.add(headMesh);
+
+                // Casco de seguridad
+                const helmetGeo = new THREE.SphereGeometry(0.21, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+                const helmet = new THREE.Mesh(helmetGeo, helmetMaterial);
+                helmet.position.y = 0.25;
+                helmet.castShadow = true;
+                this.head.add(helmet);
+
+                // Visera del casco
+                const brimGeo = new THREE.RingGeometry(0.19, 0.28, 16, 1, 0, Math.PI);
+                const brim = new THREE.Mesh(brimGeo, helmetMaterial);
+                brim.position.set(0, 0.18, 0.12);
+                brim.rotation.x = -Math.PI / 2;
+                this.head.add(brim);
+
+                // Ojos (simples)
+                const eyeGeo = new THREE.SphereGeometry(0.03, 8, 8);
+                const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const leftEye = new THREE.Mesh(eyeGeo, eyeMaterial);
+                leftEye.position.set(-0.06, 0.22, 0.15);
+                this.head.add(leftEye);
+
+                const rightEye = new THREE.Mesh(eyeGeo, eyeMaterial);
+                rightEye.position.set(0.06, 0.22, 0.15);
+                this.head.add(rightEye);
+
+                this.head.position.y = 1.78;
                 this.group.add(this.head);
 
-                // Indicador de ID (pequeño cilindro en la cabeza)
-                const badgeGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 8);
+                // === IDENTIFICADOR ===
+                const badgeGeo = new THREE.CircleGeometry(0.08, 16);
                 const badgeMaterial = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
-                    emissive: this.color,
-                    emissiveIntensity: 0.5
+                    emissive: this.vestColor,
+                    emissiveIntensity: 0.8,
+                    side: THREE.DoubleSide
                 });
-                this.badge = new THREE.Mesh(badgeGeometry, badgeMaterial);
-                this.badge.position.y = CONFIG.WORKER_HEIGHT + CONFIG.WORKER_RADIUS * 0.9;
-                this.badge.rotation.x = Math.PI / 2;
+                this.badge = new THREE.Mesh(badgeGeo, badgeMaterial);
+                this.badge.position.set(0, 1.55, 0.24);
                 this.group.add(this.badge);
 
                 // Posición inicial
                 this.group.position.copy(this.position);
-
                 scene.add(this.group);
             }
 
             createBox() {
-                const boxGeometry = new THREE.BoxGeometry(
-                    CONFIG.BOX_SIZE,
-                    CONFIG.BOX_SIZE,
-                    CONFIG.BOX_SIZE
-                );
+                const boxGroup = new THREE.Group();
+
+                // Caja de cartón
+                const boxGeo = new THREE.BoxGeometry(CONFIG.BOX_SIZE, CONFIG.BOX_SIZE, CONFIG.BOX_SIZE);
                 const boxMaterial = new THREE.MeshStandardMaterial({
-                    color: 0x8b4513,
-                    roughness: 0.8,
-                    metalness: 0.1
+                    color: 0xc4a35a,
+                    roughness: 0.9,
+                    metalness: 0.0
                 });
-                this.box = new THREE.Mesh(boxGeometry, boxMaterial);
-                this.box.position.set(0, CONFIG.WORKER_HEIGHT + CONFIG.BOX_SIZE, CONFIG.WORKER_RADIUS + CONFIG.BOX_SIZE / 2);
-                this.box.castShadow = true;
+                const boxMesh = new THREE.Mesh(boxGeo, boxMaterial);
+                boxMesh.castShadow = true;
+                boxGroup.add(boxMesh);
+
+                // Cinta de embalaje
+                const tapeMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x8b6914,
+                    roughness: 0.6
+                });
+                const tapeGeo = new THREE.BoxGeometry(CONFIG.BOX_SIZE * 1.02, 0.04, CONFIG.BOX_SIZE * 0.15);
+                const tape = new THREE.Mesh(tapeGeo, tapeMaterial);
+                tape.position.y = CONFIG.BOX_SIZE / 2 + 0.01;
+                boxGroup.add(tape);
+
+                // Bordes de la caja
+                const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+                const edgesMaterial = new THREE.LineBasicMaterial({ color: 0x8b6914 });
+                const edges = new THREE.LineSegments(edgesGeo, edgesMaterial);
+                boxGroup.add(edges);
+
+                this.box = boxGroup;
+                this.box.position.set(0, 1.2, 0.4);
                 this.group.add(this.box);
+
+                // Posición de brazos sosteniendo caja
+                this.leftArm.rotation.x = -1.2;
+                this.rightArm.rotation.x = -1.2;
+                this.leftArm.rotation.z = 0.3;
+                this.rightArm.rotation.z = -0.3;
             }
 
             removeBox() {
                 if (this.box) {
                     this.group.remove(this.box);
-                    this.box.geometry.dispose();
-                    this.box.material.dispose();
+                    this.box.traverse((child) => {
+                        if (child.geometry) child.geometry.dispose();
+                        if (child.material) child.material.dispose();
+                    });
                     this.box = null;
+
+                    // Reset brazos
+                    this.leftArm.rotation.set(0, 0, 0);
+                    this.rightArm.rotation.set(0, 0, 0);
                 }
             }
 
@@ -587,9 +798,10 @@
 
                 switch (this.state) {
                     case STATES.IDLE:
-                        // Después de un breve momento, comenzar nuevo ciclo
                         this.stateTimer += adjustedDelta * 1000;
-                        if (this.stateTimer > 200) {
+                        // Respiración sutil
+                        this.torso.scale.y = 1 + Math.sin(this.stateTimer * 0.003) * 0.02;
+                        if (this.stateTimer > 300) {
                             this.setState(STATES.MOVING_TO_PICK);
                         }
                         break;
@@ -598,14 +810,20 @@
                         if (this.moveTowards(this.targetPosition, adjustedDelta)) {
                             this.setState(STATES.LOADING);
                         }
+                        this.animateWalk(adjustedDelta);
                         break;
 
                     case STATES.LOADING:
                         this.stateTimer += adjustedDelta * 1000;
-                        // Animación de carga
-                        this.body.scale.y = 1 + Math.sin(this.stateTimer * 0.01) * 0.05;
+                        // Animación de agacharse
+                        const bendProgress = Math.min(this.stateTimer / (CONFIG.LOAD_TIME * 0.5), 1);
+                        if (bendProgress < 1) {
+                            this.torso.rotation.x = Math.sin(bendProgress * Math.PI) * 0.4;
+                            this.group.position.y = -Math.sin(bendProgress * Math.PI) * 0.2;
+                        }
                         if (this.stateTimer >= CONFIG.LOAD_TIME) {
-                            this.body.scale.y = 1;
+                            this.torso.rotation.x = 0;
+                            this.group.position.y = 0;
                             this.setState(STATES.MOVING_TO_DROP);
                         }
                         break;
@@ -614,46 +832,66 @@
                         if (this.moveTowards(this.targetPosition, adjustedDelta)) {
                             this.setState(STATES.UNLOADING);
                         }
+                        this.animateWalk(adjustedDelta, true);
                         break;
 
                     case STATES.UNLOADING:
                         this.stateTimer += adjustedDelta * 1000;
-                        // Animación de descarga
-                        this.body.scale.y = 1 - Math.sin(this.stateTimer * 0.01) * 0.05;
+                        const unloadProgress = Math.min(this.stateTimer / (CONFIG.UNLOAD_TIME * 0.5), 1);
+                        if (unloadProgress < 1) {
+                            this.torso.rotation.x = Math.sin(unloadProgress * Math.PI) * 0.3;
+                        }
                         if (this.stateTimer >= CONFIG.UNLOAD_TIME) {
-                            this.body.scale.y = 1;
+                            this.torso.rotation.x = 0;
                             this.removeBox();
                             boxesMoved++;
-
-                            // Registrar tiempo de ciclo
                             const cycleTime = simulationTime - this.cycleStartTime;
                             cycleTimes.push(cycleTime);
                             if (cycleTimes.length > 50) cycleTimes.shift();
-
                             this.setState(STATES.IDLE);
                         }
                         break;
                 }
 
-                // Actualizar posición del grupo
-                this.group.position.copy(this.position);
+                this.group.position.x = this.position.x;
+                this.group.position.z = this.position.z;
+            }
 
-                // Animación de movimiento (balanceo)
-                if (this.state === STATES.MOVING_TO_PICK || this.state === STATES.MOVING_TO_DROP) {
-                    this.body.rotation.z = Math.sin(simulationTime * 10) * 0.1;
-                } else {
-                    this.body.rotation.z *= 0.9;
+            animateWalk(deltaTime, carryingBox = false) {
+                this.walkCycle += deltaTime * 12;
+
+                const legSwing = Math.sin(this.walkCycle) * 0.6;
+                const armSwing = carryingBox ? 0 : Math.sin(this.walkCycle) * 0.4;
+
+                this.leftLeg.rotation.x = legSwing;
+                this.rightLeg.rotation.x = -legSwing;
+
+                if (!carryingBox) {
+                    this.leftArm.rotation.x = -armSwing;
+                    this.rightArm.rotation.x = armSwing;
                 }
+
+                // Ligero balanceo del torso
+                this.torso.rotation.z = Math.sin(this.walkCycle) * 0.03;
+                this.head.rotation.y = Math.sin(this.walkCycle * 0.5) * 0.05;
+
+                // Rebote vertical sutil
+                this.group.position.y = Math.abs(Math.sin(this.walkCycle)) * 0.03;
             }
 
             moveTowards(target, deltaTime) {
                 if (!target) return true;
 
                 const direction = new THREE.Vector3().subVectors(target, this.position);
+                direction.y = 0;
                 const distance = direction.length();
 
                 if (distance < 0.1) {
                     this.position.copy(target);
+                    this.leftLeg.rotation.x = 0;
+                    this.rightLeg.rotation.x = 0;
+                    this.leftArm.rotation.x = this.box ? -1.2 : 0;
+                    this.rightArm.rotation.x = this.box ? -1.2 : 0;
                     return true;
                 }
 
@@ -667,7 +905,6 @@
 
                 this.position.add(direction.multiplyScalar(moveDistance));
 
-                // Rotar hacia la dirección de movimiento
                 const angle = Math.atan2(direction.x, direction.z);
                 this.group.rotation.y = angle;
 
@@ -677,131 +914,328 @@
             dispose() {
                 this.removeBox();
                 scene.remove(this.group);
-                this.body.geometry.dispose();
-                this.body.material.dispose();
-                this.head.geometry.dispose();
-                this.head.material.dispose();
-                this.badge.geometry.dispose();
-                this.badge.material.dispose();
+                this.group.traverse((child) => {
+                    if (child.geometry) child.geometry.dispose();
+                    if (child.material) {
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(m => m.dispose());
+                        } else {
+                            child.material.dispose();
+                        }
+                    }
+                });
             }
         }
 
         // =====================================================
-        // INICIALIZACIÓN DE THREE.JS
+        // INICIALIZACIÓN THREE.JS
         // =====================================================
         function initThree() {
-            // Escena
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a1a);
-            scene.fog = new THREE.Fog(0x0a0a1a, 30, 80);
+            scene.background = new THREE.Color(0x1a1a2e);
+            scene.fog = new THREE.FogExp2(0x1a1a2e, 0.015);
 
-            // Cámara
-            camera = new THREE.PerspectiveCamera(
-                60,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                1000
-            );
-            camera.position.set(25, 20, 25);
-            camera.lookAt(0, 0, 0);
+            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(30, 22, 30);
 
-            // Renderer
             renderer = new THREE.WebGLRenderer({ antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.2;
+            renderer.toneMappingExposure = 1.0;
 
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-            // Controles de órbita
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
-            controls.minDistance = 10;
-            controls.maxDistance = 60;
-            controls.maxPolarAngle = Math.PI / 2.2;
-            controls.target.set(0, 0, 0);
+            controls.minDistance = 12;
+            controls.maxDistance = 70;
+            controls.maxPolarAngle = Math.PI / 2.1;
+            controls.target.set(0, 1, 0);
 
-            // Crear escenario
-            createFloor();
-            createZones();
+            createWarehouse();
             createLights();
-            createDecorations();
+            createDustParticles();
+            createAmbientParticles();
         }
 
         // =====================================================
-        // CREACIÓN DEL ESCENARIO
+        // SISTEMA DE PARTÍCULAS
         // =====================================================
-        function createFloor() {
-            // Suelo principal
-            const floorGeometry = new THREE.PlaneGeometry(CONFIG.FLOOR_SIZE, CONFIG.FLOOR_SIZE);
-            const floorMaterial = new THREE.MeshStandardMaterial({
-                color: 0x1a1a2e,
-                roughness: 0.9,
-                metalness: 0.1
+        function createDustParticles() {
+            const particleCount = 500;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * CONFIG.FLOOR_SIZE * 0.8;
+                positions[i * 3 + 1] = Math.random() * 6 + 0.5;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * CONFIG.FLOOR_SIZE * 0.8;
+
+                velocities[i * 3] = (Math.random() - 0.5) * 0.02;
+                velocities[i * 3 + 1] = (Math.random() - 0.5) * 0.01;
+                velocities[i * 3 + 2] = (Math.random() - 0.5) * 0.02;
+
+                sizes[i] = Math.random() * 0.08 + 0.02;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+            const material = new THREE.PointsMaterial({
+                color: 0xcccccc,
+                size: 0.05,
+                transparent: true,
+                opacity: 0.4,
+                sizeAttenuation: true,
+                blending: THREE.AdditiveBlending
             });
-            const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+
+            dustParticles = new THREE.Points(geometry, material);
+            dustParticles.userData.velocities = velocities;
+            scene.add(dustParticles);
+        }
+
+        function createAmbientParticles() {
+            const particleCount = 200;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * CONFIG.FLOOR_SIZE;
+                positions[i * 3 + 1] = Math.random() * 7 + 1;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * CONFIG.FLOOR_SIZE;
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const material = new THREE.PointsMaterial({
+                color: 0xffffee,
+                size: 0.03,
+                transparent: true,
+                opacity: 0.6,
+                sizeAttenuation: true
+            });
+
+            ambientParticles = new THREE.Points(geometry, material);
+            scene.add(ambientParticles);
+        }
+
+        function updateParticles(deltaTime) {
+            if (!dustParticles) return;
+
+            const positions = dustParticles.geometry.attributes.position.array;
+            const velocities = dustParticles.userData.velocities;
+            const halfSize = CONFIG.FLOOR_SIZE * 0.4;
+
+            for (let i = 0; i < positions.length / 3; i++) {
+                // Actualizar posiciones
+                positions[i * 3] += velocities[i * 3] * deltaTime * 60;
+                positions[i * 3 + 1] += velocities[i * 3 + 1] * deltaTime * 60;
+                positions[i * 3 + 2] += velocities[i * 3 + 2] * deltaTime * 60;
+
+                // Añadir movimiento sinusoidal suave
+                positions[i * 3] += Math.sin(simulationTime * 0.5 + i) * 0.001;
+                positions[i * 3 + 1] += Math.cos(simulationTime * 0.3 + i * 0.5) * 0.0005;
+
+                // Límites y respawn
+                if (positions[i * 3] > halfSize) positions[i * 3] = -halfSize;
+                if (positions[i * 3] < -halfSize) positions[i * 3] = halfSize;
+                if (positions[i * 3 + 1] > 7) positions[i * 3 + 1] = 0.5;
+                if (positions[i * 3 + 1] < 0.5) positions[i * 3 + 1] = 7;
+                if (positions[i * 3 + 2] > halfSize) positions[i * 3 + 2] = -halfSize;
+                if (positions[i * 3 + 2] < -halfSize) positions[i * 3 + 2] = halfSize;
+            }
+
+            dustParticles.geometry.attributes.position.needsUpdate = true;
+
+            // Rotar partículas ambientales lentamente
+            if (ambientParticles) {
+                ambientParticles.rotation.y += deltaTime * 0.02;
+            }
+        }
+
+        // =====================================================
+        // CREACIÓN DEL ALMACÉN
+        // =====================================================
+        function createWarehouse() {
+            // === SUELO ===
+            const floorGeo = new THREE.PlaneGeometry(CONFIG.FLOOR_SIZE, CONFIG.FLOOR_SIZE);
+            const floorMaterial = new THREE.MeshStandardMaterial({
+                color: 0x3a3a4a,
+                roughness: 0.85,
+                metalness: 0.15
+            });
+            const floor = new THREE.Mesh(floorGeo, floorMaterial);
             floor.rotation.x = -Math.PI / 2;
             floor.receiveShadow = true;
             scene.add(floor);
 
-            // Cuadrícula
-            const gridHelper = new THREE.GridHelper(
-                CONFIG.FLOOR_SIZE,
-                CONFIG.GRID_DIVISIONS,
-                0x2a2a4a,
-                0x1a1a3a
-            );
-            gridHelper.position.y = 0.01;
+            // Textura de concreto simulada
+            const concreteLines = new THREE.Group();
+            const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x2a2a3a });
+            for (let i = -24; i <= 24; i += 4) {
+                const lineGeo = new THREE.PlaneGeometry(0.05, CONFIG.FLOOR_SIZE);
+                const lineV = new THREE.Mesh(lineGeo, lineMaterial);
+                lineV.rotation.x = -Math.PI / 2;
+                lineV.position.set(i, 0.01, 0);
+                concreteLines.add(lineV);
+
+                const lineH = new THREE.Mesh(lineGeo, lineMaterial);
+                lineH.rotation.x = -Math.PI / 2;
+                lineH.rotation.z = Math.PI / 2;
+                lineH.position.set(0, 0.01, i);
+                concreteLines.add(lineH);
+            }
+            scene.add(concreteLines);
+
+            // === CUADRÍCULA ===
+            const gridHelper = new THREE.GridHelper(CONFIG.FLOOR_SIZE, CONFIG.GRID_DIVISIONS, 0x4a4a6a, 0x2a2a4a);
+            gridHelper.position.y = 0.02;
+            gridHelper.material.opacity = 0.3;
+            gridHelper.material.transparent = true;
             scene.add(gridHelper);
+
+            // === PAREDES ===
+            createWalls();
+
+            // === ZONAS ===
+            createEnhancedZone(CONFIG.ZONE_A, 'RECEPCIÓN', 'A');
+            createEnhancedZone(CONFIG.ZONE_B, 'DESPACHO', 'B');
+
+            // === ESTANTERÍAS ===
+            createWarehouseShelves();
+
+            // === SEÑALIZACIÓN ===
+            createFloorMarkings();
+
+            // === DECORACIONES ===
+            createForklift(-8, 8, Math.PI / 4);
+            createForklift(8, -8, -Math.PI / 2);
+            createPalletStacks();
+            createSafetyEquipment();
         }
 
-        function createZones() {
-            // Zona A - Recepción
-            createZone(CONFIG.ZONE_A, 'A');
+        function createWalls() {
+            const wallMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a5568,
+                roughness: 0.9,
+                metalness: 0.1
+            });
 
-            // Zona B - Despacho
-            createZone(CONFIG.ZONE_B, 'B');
+            const wallHeight = 8;
+            const wallThickness = 0.3;
+
+            // Pared trasera
+            const backWallGeo = new THREE.BoxGeometry(CONFIG.FLOOR_SIZE, wallHeight, wallThickness);
+            const backWall = new THREE.Mesh(backWallGeo, wallMaterial);
+            backWall.position.set(0, wallHeight / 2, -CONFIG.FLOOR_SIZE / 2);
+            backWall.castShadow = true;
+            backWall.receiveShadow = true;
+            scene.add(backWall);
+
+            // Paredes laterales
+            const sideWallGeo = new THREE.BoxGeometry(wallThickness, wallHeight, CONFIG.FLOOR_SIZE);
+
+            const leftWall = new THREE.Mesh(sideWallGeo, wallMaterial);
+            leftWall.position.set(-CONFIG.FLOOR_SIZE / 2, wallHeight / 2, 0);
+            leftWall.castShadow = true;
+            leftWall.receiveShadow = true;
+            scene.add(leftWall);
+
+            const rightWall = new THREE.Mesh(sideWallGeo, wallMaterial);
+            rightWall.position.set(CONFIG.FLOOR_SIZE / 2, wallHeight / 2, 0);
+            rightWall.castShadow = true;
+            rightWall.receiveShadow = true;
+            scene.add(rightWall);
+
+            // Ventanas industriales en pared trasera
+            createIndustrialWindows(0, -CONFIG.FLOOR_SIZE / 2 + 0.2, 5);
+
+            // Puertas de carga
+            createLoadingDoor(-15, CONFIG.FLOOR_SIZE / 2 - 0.1);
+            createLoadingDoor(15, CONFIG.FLOOR_SIZE / 2 - 0.1);
+
+            // Vigas del techo
+            const beamMaterial = new THREE.MeshStandardMaterial({
+                color: 0x718096,
+                roughness: 0.6,
+                metalness: 0.4
+            });
+
+            for (let x = -20; x <= 20; x += 10) {
+                const beamGeo = new THREE.BoxGeometry(0.4, 0.6, CONFIG.FLOOR_SIZE);
+                const beam = new THREE.Mesh(beamGeo, beamMaterial);
+                beam.position.set(x, wallHeight - 0.3, 0);
+                beam.castShadow = true;
+                scene.add(beam);
+            }
+
+            // Columnas de soporte
+            const columnMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf1c40f,
+                roughness: 0.5,
+                metalness: 0.3
+            });
+
+            const columnPositions = [
+                [-20, -20], [-20, 0], [-20, 20],
+                [20, -20], [20, 0], [20, 20],
+                [0, -20], [0, 20]
+            ];
+
+            columnPositions.forEach(([x, z]) => {
+                const columnGeo = new THREE.CylinderGeometry(0.25, 0.3, wallHeight, 8);
+                const column = new THREE.Mesh(columnGeo, columnMaterial);
+                column.position.set(x, wallHeight / 2, z);
+                column.castShadow = true;
+                scene.add(column);
+
+                // Base de la columna
+                const baseGeo = new THREE.CylinderGeometry(0.4, 0.45, 0.2, 8);
+                const baseMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+                const base = new THREE.Mesh(baseGeo, baseMat);
+                base.position.set(x, 0.1, z);
+                scene.add(base);
+            });
         }
 
-        function createZone(zone, label) {
-            // Plano semitransparente
-            const zoneGeometry = new THREE.PlaneGeometry(zone.width, zone.depth);
+        function createEnhancedZone(zone, label, letter) {
+            const zoneGroup = new THREE.Group();
+
+            // Plano de zona
+            const zoneGeo = new THREE.PlaneGeometry(zone.width, zone.depth);
             const zoneMaterial = new THREE.MeshStandardMaterial({
                 color: zone.color,
                 transparent: true,
-                opacity: 0.3,
+                opacity: 0.25,
                 side: THREE.DoubleSide,
-                roughness: 0.8
+                roughness: 0.9
             });
-            const zoneMesh = new THREE.Mesh(zoneGeometry, zoneMaterial);
+            const zoneMesh = new THREE.Mesh(zoneGeo, zoneMaterial);
             zoneMesh.rotation.x = -Math.PI / 2;
-            zoneMesh.position.set(zone.x, 0.02, zone.z);
+            zoneMesh.position.set(zone.x, 0.03, zone.z);
             zoneMesh.receiveShadow = true;
-            scene.add(zoneMesh);
+            zoneGroup.add(zoneMesh);
 
-            // Borde de la zona
-            const borderGeometry = new THREE.EdgesGeometry(zoneGeometry);
+            // Borde luminoso
+            const borderGeo = new THREE.EdgesGeometry(zoneGeo);
             const borderMaterial = new THREE.LineBasicMaterial({
                 color: zone.color,
                 linewidth: 2
             });
-            const border = new THREE.LineSegments(borderGeometry, borderMaterial);
+            const border = new THREE.LineSegments(borderGeo, borderMaterial);
             border.rotation.x = -Math.PI / 2;
-            border.position.set(zone.x, 0.03, zone.z);
-            scene.add(border);
+            border.position.set(zone.x, 0.04, zone.z);
+            zoneGroup.add(border);
 
-            // Postes de las esquinas
-            const postGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
-            const postMaterial = new THREE.MeshStandardMaterial({
-                color: zone.color,
-                emissive: zone.color,
-                emissiveIntensity: 0.3
-            });
-
+            // Esquinas con postes y luces
             const corners = [
                 [zone.x - zone.width/2, zone.z - zone.depth/2],
                 [zone.x + zone.width/2, zone.z - zone.depth/2],
@@ -809,103 +1243,142 @@
                 [zone.x + zone.width/2, zone.z + zone.depth/2]
             ];
 
-            corners.forEach(([x, z]) => {
-                const post = new THREE.Mesh(postGeometry, postMaterial);
-                post.position.set(x, 1, z);
-                post.castShadow = true;
-                scene.add(post);
-
-                // Luz en cada poste
-                const light = new THREE.PointLight(zone.color, 0.5, 5);
-                light.position.set(x, 2.2, z);
-                scene.add(light);
+            const postMaterial = new THREE.MeshStandardMaterial({
+                color: zone.color,
+                emissive: zone.color,
+                emissiveIntensity: 0.4,
+                roughness: 0.3,
+                metalness: 0.7
             });
+
+            corners.forEach(([x, z]) => {
+                // Poste
+                const postGeo = new THREE.CylinderGeometry(0.08, 0.1, 2.5, 8);
+                const post = new THREE.Mesh(postGeo, postMaterial);
+                post.position.set(x, 1.25, z);
+                post.castShadow = true;
+                zoneGroup.add(post);
+
+                // Luz en la punta
+                const lightBulbGeo = new THREE.SphereGeometry(0.12, 8, 8);
+                const lightBulbMat = new THREE.MeshStandardMaterial({
+                    color: zone.color,
+                    emissive: zone.color,
+                    emissiveIntensity: 1.0
+                });
+                const lightBulb = new THREE.Mesh(lightBulbGeo, lightBulbMat);
+                lightBulb.position.set(x, 2.6, z);
+                zoneGroup.add(lightBulb);
+
+                // Luz puntual
+                const pointLight = new THREE.PointLight(zone.color, 0.8, 8);
+                pointLight.position.set(x, 2.6, z);
+                zoneGroup.add(pointLight);
+            });
+
+            // Señal de zona
+            createZoneSign(zone.x, zone.z - zone.depth/2 - 0.5, zone.color, label);
+
+            scene.add(zoneGroup);
         }
 
-        function createLights() {
-            // Luz ambiental
-            const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
-            scene.add(ambientLight);
+        function createZoneSign(x, z, color, text) {
+            const signGroup = new THREE.Group();
 
-            // Luz direccional principal (sol)
-            const mainLight = new THREE.DirectionalLight(0xffffff, 1);
-            mainLight.position.set(20, 30, 10);
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
-            mainLight.shadow.camera.near = 0.5;
-            mainLight.shadow.camera.far = 100;
-            mainLight.shadow.camera.left = -30;
-            mainLight.shadow.camera.right = 30;
-            mainLight.shadow.camera.top = 30;
-            mainLight.shadow.camera.bottom = -30;
-            mainLight.shadow.bias = -0.0001;
-            scene.add(mainLight);
+            // Poste de la señal
+            const postGeo = new THREE.CylinderGeometry(0.05, 0.05, 3, 8);
+            const postMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            const post = new THREE.Mesh(postGeo, postMat);
+            post.position.y = 1.5;
+            signGroup.add(post);
 
-            // Luz de relleno
-            const fillLight = new THREE.DirectionalLight(0x6080ff, 0.3);
-            fillLight.position.set(-10, 10, -10);
-            scene.add(fillLight);
+            // Tablero de la señal
+            const boardGeo = new THREE.BoxGeometry(3, 0.8, 0.1);
+            const boardMat = new THREE.MeshStandardMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.3
+            });
+            const board = new THREE.Mesh(boardGeo, boardMat);
+            board.position.y = 3.2;
+            board.castShadow = true;
+            signGroup.add(board);
 
-            // Luz cenital
-            const topLight = new THREE.PointLight(0xffffff, 0.5, 50);
-            topLight.position.set(0, 15, 0);
-            scene.add(topLight);
+            signGroup.position.set(x, 0, z);
+            scene.add(signGroup);
         }
 
-        function createDecorations() {
-            // Estanterías en los bordes
-            createShelves(-18, 0, 0);
-            createShelves(18, 0, Math.PI);
-
-            // Pallets decorativos
-            for (let i = 0; i < 5; i++) {
-                createPallet(
-                    CONFIG.ZONE_A.x + (Math.random() - 0.5) * 4,
-                    CONFIG.ZONE_A.z + (Math.random() - 0.5) * 8
-                );
-            }
-
-            for (let i = 0; i < 3; i++) {
-                createPallet(
-                    CONFIG.ZONE_B.x + (Math.random() - 0.5) * 4,
-                    CONFIG.ZONE_B.z + (Math.random() - 0.5) * 8
-                );
-            }
+        function createWarehouseShelves() {
+            // Estanterías a los lados
+            createShelfUnit(-22, 0, 0, 4);
+            createShelfUnit(22, 0, Math.PI, 4);
+            createShelfUnit(0, -22, Math.PI / 2, 6);
         }
 
-        function createShelves(x, z, rotation) {
+        function createShelfUnit(x, z, rotation, sections) {
             const shelfGroup = new THREE.Group();
 
-            // Postes
-            const postGeometry = new THREE.BoxGeometry(0.2, 4, 0.2);
-            const postMaterial = new THREE.MeshStandardMaterial({
-                color: 0x4a5568,
+            const metalMaterial = new THREE.MeshStandardMaterial({
+                color: 0x4a90a4,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+
+            const shelfMaterial = new THREE.MeshStandardMaterial({
+                color: 0x5a6a7a,
                 roughness: 0.7,
                 metalness: 0.3
             });
 
-            for (let i = 0; i < 4; i++) {
-                const post = new THREE.Mesh(postGeometry, postMaterial);
-                post.position.set((i - 1.5) * 2, 2, 0);
-                post.castShadow = true;
-                shelfGroup.add(post);
+            const sectionWidth = 2.5;
+            const totalWidth = sectionWidth * sections;
+
+            for (let s = 0; s <= sections; s++) {
+                // Postes verticales
+                const postGeo = new THREE.BoxGeometry(0.1, 5, 0.1);
+                const post1 = new THREE.Mesh(postGeo, metalMaterial);
+                post1.position.set(s * sectionWidth - totalWidth / 2, 2.5, -0.5);
+                post1.castShadow = true;
+                shelfGroup.add(post1);
+
+                const post2 = new THREE.Mesh(postGeo, metalMaterial);
+                post2.position.set(s * sectionWidth - totalWidth / 2, 2.5, 0.5);
+                post2.castShadow = true;
+                shelfGroup.add(post2);
             }
 
             // Estantes
-            const shelfGeometry = new THREE.BoxGeometry(6.5, 0.1, 1);
-            const shelfMaterial = new THREE.MeshStandardMaterial({
-                color: 0x718096,
-                roughness: 0.6,
-                metalness: 0.2
-            });
-
-            for (let i = 0; i < 3; i++) {
-                const shelf = new THREE.Mesh(shelfGeometry, shelfMaterial);
-                shelf.position.set(0, 1 + i * 1.3, 0);
+            for (let level = 0; level < 4; level++) {
+                const shelfGeo = new THREE.BoxGeometry(totalWidth, 0.08, 1.2);
+                const shelf = new THREE.Mesh(shelfGeo, shelfMaterial);
+                shelf.position.set(0, 0.5 + level * 1.3, 0);
                 shelf.castShadow = true;
                 shelf.receiveShadow = true;
                 shelfGroup.add(shelf);
+
+                // Cajas en los estantes
+                if (level < 3) {
+                    for (let s = 0; s < sections; s++) {
+                        if (Math.random() > 0.3) {
+                            const boxCount = Math.floor(Math.random() * 3) + 1;
+                            for (let b = 0; b < boxCount; b++) {
+                                const boxGeo = new THREE.BoxGeometry(0.5 + Math.random() * 0.3, 0.4 + Math.random() * 0.2, 0.4 + Math.random() * 0.2);
+                                const boxMat = new THREE.MeshStandardMaterial({
+                                    color: new THREE.Color().setHSL(0.08 + Math.random() * 0.05, 0.4, 0.4 + Math.random() * 0.2),
+                                    roughness: 0.9
+                                });
+                                const box = new THREE.Mesh(boxGeo, boxMat);
+                                box.position.set(
+                                    (s + 0.5) * sectionWidth - totalWidth / 2 + (Math.random() - 0.5) * 0.5,
+                                    0.8 + level * 1.3 + Math.random() * 0.1,
+                                    (Math.random() - 0.5) * 0.4
+                                );
+                                box.castShadow = true;
+                                shelfGroup.add(box);
+                            }
+                        }
+                    }
+                }
             }
 
             shelfGroup.position.set(x, 0, z);
@@ -913,61 +1386,951 @@
             scene.add(shelfGroup);
         }
 
-        function createPallet(x, z) {
+        function createFloorMarkings() {
+            const yellowMaterial = new THREE.MeshBasicMaterial({ color: 0xf1c40f });
+            const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+            // Líneas de tráfico
+            const createLine = (x1, z1, x2, z2, material, width = 0.15) => {
+                const length = Math.sqrt((x2-x1)**2 + (z2-z1)**2);
+                const lineGeo = new THREE.PlaneGeometry(width, length);
+                const line = new THREE.Mesh(lineGeo, material);
+                line.rotation.x = -Math.PI / 2;
+                line.rotation.z = Math.atan2(x2-x1, z2-z1);
+                line.position.set((x1+x2)/2, 0.02, (z1+z2)/2);
+                scene.add(line);
+            };
+
+            // Carril principal
+            createLine(-5, -20, -5, 20, yellowMaterial);
+            createLine(5, -20, 5, 20, yellowMaterial);
+
+            // Líneas punteadas centrales
+            for (let z = -18; z <= 18; z += 3) {
+                createLine(0, z, 0, z + 1.5, whiteMaterial, 0.1);
+            }
+
+            // Cruces peatonales
+            for (let x = -2; x <= 2; x += 0.5) {
+                createLine(x, -15, x, -14, whiteMaterial, 0.3);
+                createLine(x, 14, x, 15, whiteMaterial, 0.3);
+            }
+
+            // Flechas direccionales
+            createArrow(0, -10, 0, yellowMaterial);
+            createArrow(0, 10, Math.PI, yellowMaterial);
+        }
+
+        function createArrow(x, z, rotation, material) {
+            const arrowShape = new THREE.Shape();
+            arrowShape.moveTo(0, 0.8);
+            arrowShape.lineTo(0.4, 0.3);
+            arrowShape.lineTo(0.15, 0.3);
+            arrowShape.lineTo(0.15, -0.8);
+            arrowShape.lineTo(-0.15, -0.8);
+            arrowShape.lineTo(-0.15, 0.3);
+            arrowShape.lineTo(-0.4, 0.3);
+            arrowShape.closePath();
+
+            const arrowGeo = new THREE.ShapeGeometry(arrowShape);
+            const arrow = new THREE.Mesh(arrowGeo, material);
+            arrow.rotation.x = -Math.PI / 2;
+            arrow.rotation.z = rotation;
+            arrow.position.set(x, 0.025, z);
+            scene.add(arrow);
+        }
+
+        function createForklift(x, z, rotation) {
+            const forkliftGroup = new THREE.Group();
+
+            const bodyMaterial = new THREE.MeshStandardMaterial({
+                color: 0xf39c12,
+                roughness: 0.5,
+                metalness: 0.4
+            });
+
+            const metalMaterial = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.6,
+                metalness: 0.5
+            });
+
+            // Cuerpo principal
+            const bodyGeo = new THREE.BoxGeometry(1.2, 1.2, 2);
+            const body = new THREE.Mesh(bodyGeo, bodyMaterial);
+            body.position.y = 0.8;
+            body.castShadow = true;
+            forkliftGroup.add(body);
+
+            // Techo
+            const roofGeo = new THREE.BoxGeometry(1.4, 0.1, 1.5);
+            const roof = new THREE.Mesh(roofGeo, metalMaterial);
+            roof.position.set(0, 2, 0.2);
+            roof.castShadow = true;
+            forkliftGroup.add(roof);
+
+            // Postes del techo
+            const postGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.8, 8);
+            [[0.6, -0.5], [0.6, 0.8], [-0.6, -0.5], [-0.6, 0.8]].forEach(([px, pz]) => {
+                const post = new THREE.Mesh(postGeo, metalMaterial);
+                post.position.set(px, 1.6, pz);
+                forkliftGroup.add(post);
+            });
+
+            // Mástil
+            const mastGeo = new THREE.BoxGeometry(0.1, 2.5, 0.15);
+            const mast1 = new THREE.Mesh(mastGeo, metalMaterial);
+            mast1.position.set(-0.35, 1.4, -1.2);
+            forkliftGroup.add(mast1);
+
+            const mast2 = new THREE.Mesh(mastGeo, metalMaterial);
+            mast2.position.set(0.35, 1.4, -1.2);
+            forkliftGroup.add(mast2);
+
+            // Horquillas
+            const forkMaterial = new THREE.MeshStandardMaterial({
+                color: 0x666666,
+                roughness: 0.5,
+                metalness: 0.6
+            });
+            const forkGeo = new THREE.BoxGeometry(0.1, 0.08, 1.2);
+            const fork1 = new THREE.Mesh(forkGeo, forkMaterial);
+            fork1.position.set(-0.25, 0.3, -1.8);
+            forkliftGroup.add(fork1);
+
+            const fork2 = new THREE.Mesh(forkGeo, forkMaterial);
+            fork2.position.set(0.25, 0.3, -1.8);
+            forkliftGroup.add(fork2);
+
+            // Plataforma de horquillas
+            const platGeo = new THREE.BoxGeometry(0.9, 0.6, 0.1);
+            const platform = new THREE.Mesh(platGeo, metalMaterial);
+            platform.position.set(0, 0.5, -1.25);
+            forkliftGroup.add(platform);
+
+            // Ruedas
+            const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.2, 16);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
+            [[-0.5, 0.9], [0.5, 0.9], [-0.4, -0.7], [0.4, -0.7]].forEach(([wx, wz]) => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(wx > 0 ? 0.65 : -0.65, 0.25, wz);
+                wheel.castShadow = true;
+                forkliftGroup.add(wheel);
+            });
+
+            // Contrapeso
+            const counterGeo = new THREE.BoxGeometry(1, 0.6, 0.5);
+            const counter = new THREE.Mesh(counterGeo, metalMaterial);
+            counter.position.set(0, 0.5, 1.2);
+            counter.castShadow = true;
+            forkliftGroup.add(counter);
+
+            // Luz de advertencia
+            const lightGeo = new THREE.SphereGeometry(0.1, 8, 8);
+            const lightMat = new THREE.MeshStandardMaterial({
+                color: 0xff6600,
+                emissive: 0xff6600,
+                emissiveIntensity: 0.5
+            });
+            const warningLight = new THREE.Mesh(lightGeo, lightMat);
+            warningLight.position.set(0, 2.15, 0.2);
+            forkliftGroup.add(warningLight);
+
+            forkliftGroup.position.set(x, 0, z);
+            forkliftGroup.rotation.y = rotation;
+            scene.add(forkliftGroup);
+        }
+
+        function createPalletStacks() {
+            const positions = [
+                { x: CONFIG.ZONE_A.x - 1, z: CONFIG.ZONE_A.z - 4 },
+                { x: CONFIG.ZONE_A.x + 2, z: CONFIG.ZONE_A.z + 3 },
+                { x: CONFIG.ZONE_A.x - 2, z: CONFIG.ZONE_A.z + 5 },
+                { x: CONFIG.ZONE_B.x + 1, z: CONFIG.ZONE_B.z - 3 },
+                { x: CONFIG.ZONE_B.x - 2, z: CONFIG.ZONE_B.z + 4 },
+            ];
+
+            positions.forEach(pos => {
+                createPalletWithBoxes(pos.x, pos.z);
+            });
+        }
+
+        function createPalletWithBoxes(x, z) {
             const palletGroup = new THREE.Group();
 
-            // Base del pallet
-            const baseGeometry = new THREE.BoxGeometry(1.2, 0.15, 0.8);
-            const baseMaterial = new THREE.MeshStandardMaterial({
+            // Pallet de madera
+            const palletMaterial = new THREE.MeshStandardMaterial({
                 color: 0x8b7355,
                 roughness: 0.9
             });
-            const base = new THREE.Mesh(baseGeometry, baseMaterial);
-            base.position.y = 0.075;
+
+            // Base del pallet
+            const baseGeo = new THREE.BoxGeometry(1.2, 0.12, 0.8);
+            const base = new THREE.Mesh(baseGeo, palletMaterial);
+            base.position.y = 0.06;
             base.castShadow = true;
             base.receiveShadow = true;
             palletGroup.add(base);
 
-            // Cajas apiladas (aleatorio)
-            const boxCount = Math.floor(Math.random() * 4) + 1;
-            const boxGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.3);
-            const boxMaterials = [
-                new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.8 }),
-                new THREE.MeshStandardMaterial({ color: 0x654321, roughness: 0.8 }),
-                new THREE.MeshStandardMaterial({ color: 0xa0522d, roughness: 0.8 })
-            ];
+            // Tablas del pallet
+            for (let i = -0.4; i <= 0.4; i += 0.4) {
+                const slat = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.03, 0.12), palletMaterial);
+                slat.position.set(0, 0.13, i);
+                palletGroup.add(slat);
+            }
 
-            for (let i = 0; i < boxCount; i++) {
-                const box = new THREE.Mesh(
-                    boxGeometry,
-                    boxMaterials[Math.floor(Math.random() * boxMaterials.length)]
-                );
-                box.position.set(
-                    (Math.random() - 0.5) * 0.6,
-                    0.3 + Math.floor(i / 2) * 0.35,
-                    (Math.random() - 0.5) * 0.3
-                );
-                box.rotation.y = Math.random() * 0.3;
-                box.castShadow = true;
-                box.receiveShadow = true;
-                palletGroup.add(box);
+            // Bloques
+            const blockGeo = new THREE.BoxGeometry(0.15, 0.1, 0.15);
+            [[-0.4, -0.3], [0, -0.3], [0.4, -0.3], [-0.4, 0.3], [0, 0.3], [0.4, 0.3]].forEach(([bx, bz]) => {
+                const block = new THREE.Mesh(blockGeo, palletMaterial);
+                block.position.set(bx, -0.03, bz);
+                palletGroup.add(block);
+            });
+
+            // Cajas apiladas
+            const boxColors = [0xc4a35a, 0xa08040, 0xd4b36a, 0x906030];
+            const rows = Math.floor(Math.random() * 2) + 2;
+            const cols = Math.floor(Math.random() * 2) + 2;
+            const layers = Math.floor(Math.random() * 3) + 1;
+
+            for (let layer = 0; layer < layers; layer++) {
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const boxGeo = new THREE.BoxGeometry(0.35, 0.3, 0.25);
+                        const boxMat = new THREE.MeshStandardMaterial({
+                            color: boxColors[Math.floor(Math.random() * boxColors.length)],
+                            roughness: 0.9
+                        });
+                        const box = new THREE.Mesh(boxGeo, boxMat);
+                        box.position.set(
+                            -0.3 + col * 0.4 + (Math.random() - 0.5) * 0.05,
+                            0.3 + layer * 0.32,
+                            -0.2 + row * 0.25 + (Math.random() - 0.5) * 0.05
+                        );
+                        box.rotation.y = (Math.random() - 0.5) * 0.1;
+                        box.castShadow = true;
+                        palletGroup.add(box);
+                    }
+                }
             }
 
             palletGroup.position.set(x, 0, z);
-            palletGroup.rotation.y = Math.random() * Math.PI;
+            palletGroup.rotation.y = Math.random() * Math.PI * 2;
             scene.add(palletGroup);
         }
 
+        function createSafetyEquipment() {
+            // Extintor
+            createFireExtinguisher(-24, -15);
+            createFireExtinguisher(24, 15);
+
+            // Botiquín
+            createFirstAidKit(-24, 10);
+
+            // Conos de seguridad
+            createSafetyCone(-3, 12);
+            createSafetyCone(3, 12);
+            createSafetyCone(-3, -12);
+            createSafetyCone(3, -12);
+
+            // Barriles
+            createBarrel(18, -18);
+            createBarrel(17, -16);
+            createBarrel(-18, 18);
+
+            // Transpaleta manual
+            createPalletJack(6, 5, Math.PI / 6);
+            createPalletJack(-6, -5, -Math.PI / 3);
+
+            // Cinta transportadora
+            createConveyorBelt(0, -18, 12);
+
+            // Cartel de seguridad
+            createSafetySign(-24, 0);
+
+            // Reloj industrial
+            createIndustrialClock(0, -24.5);
+        }
+
+        function createSafetyCone(x, z) {
+            const coneGroup = new THREE.Group();
+
+            // Cono
+            const coneGeo = new THREE.ConeGeometry(0.15, 0.4, 16);
+            const coneMat = new THREE.MeshStandardMaterial({
+                color: 0xff6600,
+                roughness: 0.6,
+                metalness: 0.1
+            });
+            const cone = new THREE.Mesh(coneGeo, coneMat);
+            cone.position.y = 0.25;
+            cone.castShadow = true;
+            coneGroup.add(cone);
+
+            // Franjas reflectantes
+            const stripeMat = new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                emissive: 0xffffff,
+                emissiveIntensity: 0.3
+            });
+
+            const stripe1Geo = new THREE.TorusGeometry(0.1, 0.015, 8, 16);
+            const stripe1 = new THREE.Mesh(stripe1Geo, stripeMat);
+            stripe1.rotation.x = Math.PI / 2;
+            stripe1.position.y = 0.32;
+            coneGroup.add(stripe1);
+
+            const stripe2 = new THREE.Mesh(stripe1Geo.clone(), stripeMat);
+            stripe2.rotation.x = Math.PI / 2;
+            stripe2.position.y = 0.22;
+            stripe2.scale.set(1.2, 1.2, 1);
+            coneGroup.add(stripe2);
+
+            // Base
+            const baseGeo = new THREE.CylinderGeometry(0.18, 0.2, 0.05, 16);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 0.025;
+            coneGroup.add(base);
+
+            coneGroup.position.set(x, 0, z);
+            scene.add(coneGroup);
+        }
+
+        function createBarrel(x, z) {
+            const barrelGroup = new THREE.Group();
+
+            // Cuerpo del barril
+            const barrelGeo = new THREE.CylinderGeometry(0.3, 0.28, 0.9, 16);
+            const barrelMat = new THREE.MeshStandardMaterial({
+                color: 0x2980b9,
+                roughness: 0.5,
+                metalness: 0.4
+            });
+            const barrel = new THREE.Mesh(barrelGeo, barrelMat);
+            barrel.position.y = 0.45;
+            barrel.castShadow = true;
+            barrelGroup.add(barrel);
+
+            // Aros metálicos
+            const ringMat = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.4,
+                metalness: 0.7
+            });
+
+            [0.1, 0.45, 0.8].forEach(y => {
+                const ringGeo = new THREE.TorusGeometry(0.29, 0.02, 8, 24);
+                const ring = new THREE.Mesh(ringGeo, ringMat);
+                ring.rotation.x = Math.PI / 2;
+                ring.position.y = y;
+                barrelGroup.add(ring);
+            });
+
+            // Tapa
+            const lidGeo = new THREE.CylinderGeometry(0.28, 0.28, 0.03, 16);
+            const lid = new THREE.Mesh(lidGeo, ringMat);
+            lid.position.y = 0.9;
+            barrelGroup.add(lid);
+
+            // Símbolo de peligro (triángulo)
+            const warningShape = new THREE.Shape();
+            warningShape.moveTo(0, 0.08);
+            warningShape.lineTo(0.07, -0.04);
+            warningShape.lineTo(-0.07, -0.04);
+            warningShape.closePath();
+
+            const warningGeo = new THREE.ShapeGeometry(warningShape);
+            const warningMat = new THREE.MeshBasicMaterial({ color: 0xf1c40f, side: THREE.DoubleSide });
+            const warning = new THREE.Mesh(warningGeo, warningMat);
+            warning.position.set(0, 0.5, 0.31);
+            barrelGroup.add(warning);
+
+            barrelGroup.position.set(x, 0, z);
+            scene.add(barrelGroup);
+        }
+
+        function createPalletJack(x, z, rotation) {
+            const jackGroup = new THREE.Group();
+
+            const metalMat = new THREE.MeshStandardMaterial({
+                color: 0xf39c12,
+                roughness: 0.5,
+                metalness: 0.5
+            });
+
+            const darkMat = new THREE.MeshStandardMaterial({
+                color: 0x333333,
+                roughness: 0.6,
+                metalness: 0.4
+            });
+
+            // Horquillas
+            const forkGeo = new THREE.BoxGeometry(0.12, 0.08, 1.2);
+            const fork1 = new THREE.Mesh(forkGeo, metalMat);
+            fork1.position.set(-0.2, 0.04, 0);
+            fork1.castShadow = true;
+            jackGroup.add(fork1);
+
+            const fork2 = new THREE.Mesh(forkGeo, metalMat);
+            fork2.position.set(0.2, 0.04, 0);
+            fork2.castShadow = true;
+            jackGroup.add(fork2);
+
+            // Cuerpo central
+            const bodyGeo = new THREE.BoxGeometry(0.5, 0.15, 0.3);
+            const body = new THREE.Mesh(bodyGeo, metalMat);
+            body.position.set(0, 0.1, -0.5);
+            body.castShadow = true;
+            jackGroup.add(body);
+
+            // Mango
+            const handleGeo = new THREE.CylinderGeometry(0.02, 0.02, 1.2, 8);
+            const handle = new THREE.Mesh(handleGeo, darkMat);
+            handle.position.set(0, 0.6, -0.7);
+            handle.rotation.x = -0.3;
+            jackGroup.add(handle);
+
+            // Empuñadura
+            const gripGeo = new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8);
+            const grip = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
+            grip.rotation.z = Math.PI / 2;
+            grip.position.set(0, 1.1, -1.0);
+            jackGroup.add(grip);
+
+            // Ruedas delanteras
+            const wheelGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.08, 12);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.9 });
+
+            [[-0.2, 0.55], [0.2, 0.55]].forEach(([wx, wz]) => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(wx > 0 ? 0.26 : -0.26, 0.06, wz);
+                jackGroup.add(wheel);
+            });
+
+            // Ruedas traseras (steering)
+            const bigWheelGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.06, 16);
+            const wheel1 = new THREE.Mesh(bigWheelGeo, wheelMat);
+            wheel1.rotation.z = Math.PI / 2;
+            wheel1.position.set(-0.28, 0.1, -0.5);
+            jackGroup.add(wheel1);
+
+            const wheel2 = new THREE.Mesh(bigWheelGeo, wheelMat);
+            wheel2.rotation.z = Math.PI / 2;
+            wheel2.position.set(0.28, 0.1, -0.5);
+            jackGroup.add(wheel2);
+
+            jackGroup.position.set(x, 0, z);
+            jackGroup.rotation.y = rotation;
+            scene.add(jackGroup);
+        }
+
+        function createConveyorBelt(x, z, length) {
+            const conveyorGroup = new THREE.Group();
+
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: 0x4a5568,
+                roughness: 0.6,
+                metalness: 0.5
+            });
+
+            const beltMat = new THREE.MeshStandardMaterial({
+                color: 0x1a1a1a,
+                roughness: 0.8,
+                metalness: 0.1
+            });
+
+            const rollerMat = new THREE.MeshStandardMaterial({
+                color: 0x718096,
+                roughness: 0.4,
+                metalness: 0.6
+            });
+
+            // Marco lateral
+            const sideGeo = new THREE.BoxGeometry(0.08, 0.4, length);
+            const side1 = new THREE.Mesh(sideGeo, frameMat);
+            side1.position.set(-0.5, 0.5, 0);
+            side1.castShadow = true;
+            conveyorGroup.add(side1);
+
+            const side2 = new THREE.Mesh(sideGeo, frameMat);
+            side2.position.set(0.5, 0.5, 0);
+            side2.castShadow = true;
+            conveyorGroup.add(side2);
+
+            // Banda transportadora
+            const beltGeo = new THREE.BoxGeometry(0.9, 0.05, length - 0.2);
+            const belt = new THREE.Mesh(beltGeo, beltMat);
+            belt.position.set(0, 0.68, 0);
+            belt.receiveShadow = true;
+            conveyorGroup.add(belt);
+
+            // Rodillos
+            const rollerGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.85, 12);
+            for (let rz = -length/2 + 0.5; rz <= length/2 - 0.5; rz += 0.8) {
+                const roller = new THREE.Mesh(rollerGeo, rollerMat);
+                roller.rotation.z = Math.PI / 2;
+                roller.position.set(0, 0.6, rz);
+                conveyorGroup.add(roller);
+            }
+
+            // Patas
+            const legGeo = new THREE.BoxGeometry(0.08, 0.5, 0.08);
+            [[-0.45, -length/2 + 0.3], [0.45, -length/2 + 0.3], [-0.45, length/2 - 0.3], [0.45, length/2 - 0.3]].forEach(([lx, lz]) => {
+                const leg = new THREE.Mesh(legGeo, frameMat);
+                leg.position.set(lx, 0.25, lz);
+                leg.castShadow = true;
+                conveyorGroup.add(leg);
+            });
+
+            // Cajas en la cinta
+            const boxColors = [0xc4a35a, 0xa08040, 0xd4b36a];
+            for (let bz = -length/2 + 1.5; bz <= length/2 - 1.5; bz += 2) {
+                if (Math.random() > 0.4) {
+                    const boxGeo = new THREE.BoxGeometry(0.4, 0.35, 0.35);
+                    const boxMat = new THREE.MeshStandardMaterial({
+                        color: boxColors[Math.floor(Math.random() * boxColors.length)],
+                        roughness: 0.9
+                    });
+                    const box = new THREE.Mesh(boxGeo, boxMat);
+                    box.position.set((Math.random() - 0.5) * 0.3, 0.88, bz);
+                    box.rotation.y = (Math.random() - 0.5) * 0.2;
+                    box.castShadow = true;
+                    conveyorGroup.add(box);
+                }
+            }
+
+            // Motor
+            const motorGeo = new THREE.BoxGeometry(0.3, 0.25, 0.4);
+            const motor = new THREE.Mesh(motorGeo, new THREE.MeshStandardMaterial({ color: 0x27ae60, roughness: 0.5, metalness: 0.4 }));
+            motor.position.set(-0.65, 0.4, -length/2 + 0.5);
+            motor.castShadow = true;
+            conveyorGroup.add(motor);
+
+            conveyorGroup.position.set(x, 0, z);
+            scene.add(conveyorGroup);
+        }
+
+        function createSafetySign(x, z) {
+            const signGroup = new THREE.Group();
+
+            // Poste
+            const postGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.5, 8);
+            const postMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7 });
+            const post = new THREE.Mesh(postGeo, postMat);
+            post.position.y = 1.25;
+            signGroup.add(post);
+
+            // Panel principal
+            const panelGeo = new THREE.BoxGeometry(0.8, 1.2, 0.05);
+            const panelMat = new THREE.MeshStandardMaterial({ color: 0x2980b9, roughness: 0.5 });
+            const panel = new THREE.Mesh(panelGeo, panelMat);
+            panel.position.set(0.45, 1.8, 0);
+            panel.castShadow = true;
+            signGroup.add(panel);
+
+            // Icono de casco (círculo)
+            const iconBgGeo = new THREE.CircleGeometry(0.25, 32);
+            const iconBgMat = new THREE.MeshStandardMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+            const iconBg = new THREE.Mesh(iconBgGeo, iconBgMat);
+            iconBg.position.set(0.45, 2.0, 0.03);
+            signGroup.add(iconBg);
+
+            // Símbolo de casco (simplificado)
+            const helmetShape = new THREE.Shape();
+            helmetShape.arc(0, 0, 0.12, 0, Math.PI, false);
+            helmetShape.lineTo(-0.12, -0.05);
+            helmetShape.lineTo(0.12, -0.05);
+            helmetShape.closePath();
+
+            const helmetGeo = new THREE.ShapeGeometry(helmetShape);
+            const helmetMat = new THREE.MeshBasicMaterial({ color: 0x2980b9, side: THREE.DoubleSide });
+            const helmet = new THREE.Mesh(helmetGeo, helmetMat);
+            helmet.position.set(0.45, 2.0, 0.035);
+            signGroup.add(helmet);
+
+            // Borde del cartel
+            const borderGeo = new THREE.EdgesGeometry(panelGeo);
+            const borderMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+            const border = new THREE.LineSegments(borderGeo, borderMat);
+            border.position.copy(panel.position);
+            signGroup.add(border);
+
+            signGroup.position.set(x, 0, z);
+            signGroup.rotation.y = Math.PI / 2;
+            scene.add(signGroup);
+        }
+
+        function createIndustrialClock(x, z) {
+            const clockGroup = new THREE.Group();
+
+            // Cuerpo del reloj
+            const bodyGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.15, 32);
+            const bodyMat = new THREE.MeshStandardMaterial({
+                color: 0x2c3e50,
+                roughness: 0.5,
+                metalness: 0.4
+            });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.rotation.x = Math.PI / 2;
+            clockGroup.add(body);
+
+            // Cara del reloj
+            const faceGeo = new THREE.CircleGeometry(0.45, 32);
+            const faceMat = new THREE.MeshStandardMaterial({
+                color: 0xecf0f1,
+                roughness: 0.3,
+                side: THREE.DoubleSide
+            });
+            const face = new THREE.Mesh(faceGeo, faceMat);
+            face.position.z = 0.08;
+            clockGroup.add(face);
+
+            // Marcas de horas
+            const markMat = new THREE.MeshBasicMaterial({ color: 0x2c3e50 });
+            for (let i = 0; i < 12; i++) {
+                const angle = (i / 12) * Math.PI * 2 - Math.PI / 2;
+                const markGeo = new THREE.BoxGeometry(i % 3 === 0 ? 0.04 : 0.02, 0.08, 0.01);
+                const mark = new THREE.Mesh(markGeo, markMat);
+                mark.position.set(Math.cos(angle) * 0.38, Math.sin(angle) * 0.38, 0.085);
+                mark.rotation.z = angle + Math.PI / 2;
+                clockGroup.add(mark);
+            }
+
+            // Centro
+            const centerGeo = new THREE.CircleGeometry(0.03, 16);
+            const centerMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c });
+            const center = new THREE.Mesh(centerGeo, centerMat);
+            center.position.z = 0.09;
+            clockGroup.add(center);
+
+            // Manecillas (hora y minuto)
+            const hourGeo = new THREE.BoxGeometry(0.03, 0.2, 0.01);
+            const hourHand = new THREE.Mesh(hourGeo, markMat);
+            hourHand.position.set(0, 0.1, 0.088);
+            hourHand.rotation.z = -Math.PI / 4; // ~10:10
+            clockGroup.add(hourHand);
+
+            const minuteGeo = new THREE.BoxGeometry(0.02, 0.3, 0.01);
+            const minuteHand = new THREE.Mesh(minuteGeo, markMat);
+            minuteHand.position.set(0, 0.12, 0.089);
+            minuteHand.rotation.z = Math.PI / 6;
+            clockGroup.add(minuteHand);
+
+            clockGroup.position.set(x, 4.5, z);
+            scene.add(clockGroup);
+        }
+
+        function createIndustrialWindows(x, z, count) {
+            const windowGroup = new THREE.Group();
+
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: 0x2c3e50,
+                roughness: 0.5,
+                metalness: 0.5
+            });
+
+            const glassMat = new THREE.MeshStandardMaterial({
+                color: 0x87ceeb,
+                transparent: true,
+                opacity: 0.4,
+                roughness: 0.1,
+                metalness: 0.2,
+                emissive: 0x4488aa,
+                emissiveIntensity: 0.3
+            });
+
+            const windowWidth = 4;
+            const windowHeight = 2;
+            const spacing = 8;
+
+            for (let i = 0; i < count; i++) {
+                const wx = (i - (count - 1) / 2) * spacing;
+
+                // Marco exterior
+                const frameGeo = new THREE.BoxGeometry(windowWidth + 0.3, windowHeight + 0.3, 0.15);
+                const frame = new THREE.Mesh(frameGeo, frameMat);
+                frame.position.set(wx, 6, 0);
+                windowGroup.add(frame);
+
+                // Cristal
+                const glassGeo = new THREE.PlaneGeometry(windowWidth - 0.2, windowHeight - 0.2);
+                const glass = new THREE.Mesh(glassGeo, glassMat);
+                glass.position.set(wx, 6, 0.1);
+                windowGroup.add(glass);
+
+                // Divisiones del cristal
+                const divMat = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+
+                // División horizontal
+                const hDivGeo = new THREE.BoxGeometry(windowWidth - 0.2, 0.08, 0.12);
+                const hDiv = new THREE.Mesh(hDivGeo, divMat);
+                hDiv.position.set(wx, 6, 0.12);
+                windowGroup.add(hDiv);
+
+                // División vertical
+                const vDivGeo = new THREE.BoxGeometry(0.08, windowHeight - 0.2, 0.12);
+                const vDiv = new THREE.Mesh(vDivGeo, divMat);
+                vDiv.position.set(wx, 6, 0.12);
+                windowGroup.add(vDiv);
+
+                // Luz que entra por la ventana
+                const windowLight = new THREE.PointLight(0x87ceeb, 0.3, 10);
+                windowLight.position.set(wx, 6, 1);
+                windowGroup.add(windowLight);
+            }
+
+            windowGroup.position.set(x, 0, z);
+            scene.add(windowGroup);
+        }
+
+        function createLoadingDoor(x, z) {
+            const doorGroup = new THREE.Group();
+
+            const doorWidth = 5;
+            const doorHeight = 5;
+
+            // Marco de la puerta
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: 0xf1c40f,
+                roughness: 0.5,
+                metalness: 0.4
+            });
+
+            // Marco superior
+            const topFrameGeo = new THREE.BoxGeometry(doorWidth + 0.6, 0.3, 0.4);
+            const topFrame = new THREE.Mesh(topFrameGeo, frameMat);
+            topFrame.position.set(0, doorHeight + 0.15, 0);
+            doorGroup.add(topFrame);
+
+            // Marcos laterales
+            const sideFrameGeo = new THREE.BoxGeometry(0.3, doorHeight, 0.4);
+            const leftFrame = new THREE.Mesh(sideFrameGeo, frameMat);
+            leftFrame.position.set(-doorWidth / 2 - 0.15, doorHeight / 2, 0);
+            doorGroup.add(leftFrame);
+
+            const rightFrame = new THREE.Mesh(sideFrameGeo, frameMat);
+            rightFrame.position.set(doorWidth / 2 + 0.15, doorHeight / 2, 0);
+            doorGroup.add(rightFrame);
+
+            // Puerta enrollable (parcialmente abierta)
+            const doorMat = new THREE.MeshStandardMaterial({
+                color: 0x718096,
+                roughness: 0.7,
+                metalness: 0.5
+            });
+
+            // Parte cerrada arriba
+            const closedPartGeo = new THREE.BoxGeometry(doorWidth, 2, 0.1);
+            const closedPart = new THREE.Mesh(closedPartGeo, doorMat);
+            closedPart.position.set(0, doorHeight - 1, 0);
+            doorGroup.add(closedPart);
+
+            // Líneas horizontales de la puerta enrollable
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0x4a5568 });
+            for (let ly = 0; ly < 8; ly++) {
+                const lineGeo = new THREE.BoxGeometry(doorWidth, 0.02, 0.12);
+                const line = new THREE.Mesh(lineGeo, lineMat);
+                line.position.set(0, doorHeight - 0.25 - ly * 0.25, 0);
+                doorGroup.add(line);
+            }
+
+            // Espacio de entrada (área oscura)
+            const entranceMat = new THREE.MeshBasicMaterial({ color: 0x1a1a2e });
+            const entranceGeo = new THREE.PlaneGeometry(doorWidth - 0.2, doorHeight - 2.2);
+            const entrance = new THREE.Mesh(entranceGeo, entranceMat);
+            entrance.position.set(0, (doorHeight - 2.2) / 2 + 0.1, -0.1);
+            doorGroup.add(entrance);
+
+            // Rampa de carga
+            const rampMat = new THREE.MeshStandardMaterial({
+                color: 0x3a3a4a,
+                roughness: 0.9
+            });
+            const rampGeo = new THREE.BoxGeometry(doorWidth - 0.5, 0.15, 2);
+            const ramp = new THREE.Mesh(rampGeo, rampMat);
+            ramp.position.set(0, 0.08, 1.2);
+            ramp.rotation.x = 0.05;
+            doorGroup.add(ramp);
+
+            // Protectores laterales amarillos
+            const protectorMat = new THREE.MeshStandardMaterial({
+                color: 0xf1c40f,
+                roughness: 0.5
+            });
+            const protectorGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 8);
+
+            const leftProtector = new THREE.Mesh(protectorGeo, protectorMat);
+            leftProtector.position.set(-doorWidth / 2 - 0.5, 0.6, 1);
+            doorGroup.add(leftProtector);
+
+            const rightProtector = new THREE.Mesh(protectorGeo, protectorMat);
+            rightProtector.position.set(doorWidth / 2 + 0.5, 0.6, 1);
+            doorGroup.add(rightProtector);
+
+            // Luz de advertencia
+            const warningLightGeo = new THREE.BoxGeometry(0.3, 0.15, 0.1);
+            const warningLightMat = new THREE.MeshStandardMaterial({
+                color: 0xff6600,
+                emissive: 0xff6600,
+                emissiveIntensity: 0.8
+            });
+            const warningLight = new THREE.Mesh(warningLightGeo, warningLightMat);
+            warningLight.position.set(doorWidth / 2 + 0.15, doorHeight + 0.3, 0.1);
+            doorGroup.add(warningLight);
+
+            // Señal "LOADING"
+            const signGeo = new THREE.BoxGeometry(2, 0.5, 0.05);
+            const signMat = new THREE.MeshStandardMaterial({
+                color: 0x2980b9,
+                emissive: 0x2980b9,
+                emissiveIntensity: 0.2
+            });
+            const sign = new THREE.Mesh(signGeo, signMat);
+            sign.position.set(0, doorHeight + 0.7, 0.1);
+            doorGroup.add(sign);
+
+            doorGroup.position.set(x, 0, z);
+            scene.add(doorGroup);
+        }
+
+        function createFireExtinguisher(x, z) {
+            const extGroup = new THREE.Group();
+
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.4, metalness: 0.3 });
+            const metalMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.5, metalness: 0.6 });
+
+            // Cilindro
+            const bodyGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.5, 16);
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.8;
+            body.castShadow = true;
+            extGroup.add(body);
+
+            // Válvula
+            const valveGeo = new THREE.CylinderGeometry(0.04, 0.06, 0.1, 8);
+            const valve = new THREE.Mesh(valveGeo, metalMat);
+            valve.position.y = 1.1;
+            extGroup.add(valve);
+
+            // Manguera
+            const hoseMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const hoseGeo = new THREE.TorusGeometry(0.06, 0.015, 8, 16, Math.PI);
+            const hose = new THREE.Mesh(hoseGeo, hoseMat);
+            hose.position.set(0.1, 1.05, 0);
+            hose.rotation.y = Math.PI / 2;
+            extGroup.add(hose);
+
+            // Soporte de pared
+            const bracketGeo = new THREE.BoxGeometry(0.25, 0.4, 0.05);
+            const bracket = new THREE.Mesh(bracketGeo, metalMat);
+            bracket.position.set(0, 0.8, -0.14);
+            extGroup.add(bracket);
+
+            extGroup.position.set(x, 0.3, z);
+            scene.add(extGroup);
+        }
+
+        function createFirstAidKit(x, z) {
+            const kitGroup = new THREE.Group();
+
+            // Caja
+            const boxMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+            const boxGeo = new THREE.BoxGeometry(0.4, 0.35, 0.12);
+            const box = new THREE.Mesh(boxGeo, boxMat);
+            box.castShadow = true;
+            kitGroup.add(box);
+
+            // Cruz roja
+            const crossMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, emissive: 0xe74c3c, emissiveIntensity: 0.2 });
+
+            const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.02), crossMat);
+            crossH.position.z = 0.07;
+            kitGroup.add(crossH);
+
+            const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.2, 0.02), crossMat);
+            crossV.position.z = 0.07;
+            kitGroup.add(crossV);
+
+            kitGroup.position.set(x, 1.2, z);
+            scene.add(kitGroup);
+        }
+
+        function createLights() {
+            // Luz ambiental
+            const ambientLight = new THREE.AmbientLight(0x404060, 0.4);
+            scene.add(ambientLight);
+
+            // Luz direccional principal
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            mainLight.position.set(15, 25, 10);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.camera.near = 0.5;
+            mainLight.shadow.camera.far = 80;
+            mainLight.shadow.camera.left = -35;
+            mainLight.shadow.camera.right = 35;
+            mainLight.shadow.camera.top = 35;
+            mainLight.shadow.camera.bottom = -35;
+            mainLight.shadow.bias = -0.0001;
+            scene.add(mainLight);
+
+            // Luz de relleno
+            const fillLight = new THREE.DirectionalLight(0x8090ff, 0.3);
+            fillLight.position.set(-15, 15, -10);
+            scene.add(fillLight);
+
+            // Luces industriales del techo
+            const lightPositions = [
+                [-12, 7, -10], [0, 7, -10], [12, 7, -10],
+                [-12, 7, 0], [0, 7, 0], [12, 7, 0],
+                [-12, 7, 10], [0, 7, 10], [12, 7, 10]
+            ];
+
+            lightPositions.forEach(([lx, ly, lz]) => {
+                // Carcasa de la lámpara
+                const housingGeo = new THREE.CylinderGeometry(0.4, 0.5, 0.3, 8);
+                const housingMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.7, metalness: 0.5 });
+                const housing = new THREE.Mesh(housingGeo, housingMat);
+                housing.position.set(lx, ly, lz);
+                scene.add(housing);
+
+                // Bombilla
+                const bulbGeo = new THREE.SphereGeometry(0.2, 16, 16);
+                const bulbMat = new THREE.MeshStandardMaterial({
+                    color: 0xffffee,
+                    emissive: 0xffffaa,
+                    emissiveIntensity: 0.8
+                });
+                const bulb = new THREE.Mesh(bulbGeo, bulbMat);
+                bulb.position.set(lx, ly - 0.2, lz);
+                scene.add(bulb);
+
+                // Luz puntual
+                const pointLight = new THREE.PointLight(0xffffee, 0.6, 15);
+                pointLight.position.set(lx, ly - 0.3, lz);
+                pointLight.castShadow = false;
+                scene.add(pointLight);
+            });
+
+            // Hemisphere light para ambiente
+            const hemiLight = new THREE.HemisphereLight(0x8080a0, 0x303040, 0.4);
+            scene.add(hemiLight);
+        }
+
         // =====================================================
-        // FUNCIONES DE CONTROL (GLOBALES)
+        // FUNCIONES DE CONTROL
         // =====================================================
         function addWorker() {
             const startPos = new THREE.Vector3(
-                (Math.random() - 0.5) * 6,
+                (Math.random() - 0.5) * 8,
                 0,
-                (Math.random() - 0.5) * 6
+                (Math.random() - 0.5) * 8
             );
-            const worker = new Worker(workerIdCounter++, startPos);
+            const worker = new HumanoidWorker(workerIdCounter++, startPos);
             workers.push(worker);
             updateWorkersUI();
         }
@@ -981,17 +2344,12 @@
         }
 
         function resetSimulation() {
-            // Eliminar todos los trabajadores
             workers.forEach(w => w.dispose());
             workers = [];
-
-            // Resetear estadísticas
             boxesMoved = 0;
             cycleTimes = [];
             simulationTime = 0;
             workerIdCounter = 0;
-
-            // Actualizar UI
             updateKPIs();
             updateWorkersUI();
         }
@@ -1001,7 +2359,6 @@
             document.getElementById('speed-value').textContent = `${simulationSpeed.toFixed(1)}x`;
         }
 
-        // Exponer funciones globalmente
         window.addWorker = addWorker;
         window.removeWorker = removeWorker;
         window.resetSimulation = resetSimulation;
@@ -1013,20 +2370,16 @@
         function updateKPIs() {
             document.getElementById('kpi-boxes').textContent = boxesMoved;
 
-            // Throughput (cajas por minuto)
             const throughput = simulationTime > 0 ? (boxesMoved / simulationTime) * 60 : 0;
             document.getElementById('kpi-throughput').textContent = throughput.toFixed(1);
 
-            // Tiempo de ciclo promedio
             const avgCycle = cycleTimes.length > 0
                 ? cycleTimes.reduce((a, b) => a + b, 0) / cycleTimes.length
                 : 0;
             document.getElementById('kpi-cycle').textContent = avgCycle.toFixed(1);
 
-            // Número de operarios
             document.getElementById('kpi-workers').textContent = workers.length;
 
-            // Tiempo de simulación
             const minutes = Math.floor(simulationTime / 60);
             const seconds = Math.floor(simulationTime % 60);
             document.getElementById('sim-time').textContent =
@@ -1056,26 +2409,27 @@
         function animate(currentTime) {
             requestAnimationFrame(animate);
 
-            // Calcular delta time
             if (lastTime === 0) lastTime = currentTime;
             const deltaTime = (currentTime - lastTime) / 1000;
             lastTime = currentTime;
 
-            // Actualizar tiempo de simulación
             simulationTime += deltaTime * simulationSpeed;
 
             // Actualizar trabajadores
             workers.forEach(worker => worker.update(deltaTime));
 
+            // Actualizar partículas
+            updateParticles(deltaTime);
+
             // Actualizar controles
             controls.update();
 
-            // Actualizar KPIs (cada 10 frames aproximadamente)
+            // Actualizar KPIs
             if (Math.floor(currentTime / 100) % 3 === 0) {
                 updateKPIs();
             }
 
-            // Actualizar lista de trabajadores (cada segundo aproximadamente)
+            // Actualizar lista de trabajadores
             if (Math.floor(currentTime / 500) % 2 === 0) {
                 updateWorkersUI();
             }
@@ -1085,7 +2439,7 @@
         }
 
         // =====================================================
-        // MANEJO DE EVENTOS
+        // EVENTOS
         // =====================================================
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
@@ -1101,16 +2455,21 @@
         function init() {
             initThree();
 
-            // Agregar algunos trabajadores iniciales
+            // Agregar trabajadores iniciales
             for (let i = 0; i < 3; i++) {
-                setTimeout(() => addWorker(), i * 300);
+                setTimeout(() => addWorker(), i * 400);
             }
 
-            // Iniciar animación
+            // Ocultar pantalla de carga
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                loadingScreen.style.opacity = '0';
+                setTimeout(() => loadingScreen.remove(), 500);
+            }, 1000);
+
             animate(0);
         }
 
-        // Ejecutar cuando el DOM esté listo
         init();
     </script>
 </body>
